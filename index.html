@@ -35,7 +35,7 @@
 
             <!-- Controls (Dropdown Filter MTD & Posisi Update Badge) -->
             <div class="flex flex-wrap items-center gap-3">
-                <!-- Dropdown Filter MTD (Bulan Target Close) -->
+                <!-- Dropdown Filter MTD -->
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-500">
                         <i class="fa-regular fa-calendar-days text-sm"></i>
@@ -173,6 +173,28 @@
             </div>
         </div>
 
+        <!-- Section Tambahan: Progress Project per Witel (MTD) -->
+        <div class="bg-slate-50/50 p-5 rounded-2xl border border-slate-200/60">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-sm font-bold text-slate-800"><i class="fa-solid fa-chart-column mr-2 text-blue-600"></i>Progress Project per Witel (MTD)</h2>
+                <span class="text-[11px] bg-blue-100 text-blue-800 px-2.5 py-1 rounded-md font-medium" id="mtdLabel">April</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="border-b border-slate-200 text-slate-400 font-bold uppercase">
+                            <th class="pb-2">Witel (Kolom C)</th>
+                            <th class="pb-2 text-center">Project Close / Total Project (TOMPS Close)</th>
+                            <th class="pb-2 text-right">Progress MTD (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="witelMtdTableBody" class="divide-y divide-slate-100 text-slate-700 font-medium">
+                        <!-- Populated via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
     <!-- Script JavaScript -->
@@ -210,6 +232,7 @@
             let totalInProgress = 0;
 
             let witelDataMap = {};
+            let witelMtdMap = {};
 
             globalData.forEach(item => {
                 let targetBulan = (item["Bulan Target Close"] || "").toString().trim().toUpperCase();
@@ -221,7 +244,7 @@
                 // Filter MTD berdasarkan Kolom AN (Bulan Target Close), kecuali jika dipilih "ALL" (YTD)
                 if (selectedMonth !== "ALL") {
                     if (!targetBulan.includes(selectedMonth)) {
-                        return; // Lewati jika tidak sesuai bulan yang dipilih
+                        return; 
                     }
                 }
 
@@ -230,22 +253,33 @@
                 let nilaiBC = parseNumber(item["Nilai BC"]);
                 let nilaiOBL = parseNumber(item["NILAI OBL (exc PPN)"]);
                 let witel = (item["Witel"] || "Lainnya").toString().trim();
+                let tomps = (item["TOMPS"] || "").toString().trim().toLowerCase();
 
                 totalNilaiBC += nilaiBC;
                 totalNilaiOBL += nilaiOBL;
 
-                // Cek status close berdasarkan PROGRES OBL
-                if (progresOBL === "closed") {
+                // Cek status close berdasarkan kolom AU (TOMPS) == "close"
+                if (tomps === "close") {
                     totalClose++;
-                    totalNilaiClose += nilaiOBL; // Nilai Close mengacu ke Kolom P (NILAI OBL)
+                    totalNilaiClose += nilaiOBL; 
                 } else {
                     totalInProgress++;
                 }
 
+                // Akumulasi bar chart per witel (berdasarkan nilai BC)
                 if (!witelDataMap[witel]) {
                     witelDataMap[witel] = 0;
                 }
                 witelDataMap[witel] += nilaiBC;
+
+                // Akumulasi untuk Progress Project MTD per Witel (Close vs Total per Witel)
+                if (!witelMtdMap[witel]) {
+                    witelMtdMap[witel] = { total: 0, close: 0 };
+                }
+                witelMtdMap[witel].total++;
+                if (tomps === "close") {
+                    witelMtdMap[witel].close++;
+                }
             });
 
             let progressPersen = totalProject > 0 ? Math.round((totalClose / totalProject) * 100) : 0;
@@ -260,7 +294,40 @@
             
             document.getElementById("progressBarFill").style.width = progressPersen + "%";
 
+            // Render tabel MTD per Witel
+            renderWitelMtdTable(witelMtdMap, selectedMonth);
+
+            // Render Grafik
             renderCharts(witelDataMap, totalClose, totalInProgress);
+        }
+
+        function renderWitelMtdTable(witelMtdMap, selectedMonth) {
+            let tbodyHtml = "";
+            Object.keys(witelMtdMap).sort().forEach(witel => {
+                let stats = witelMtdMap[witel];
+                let pct = stats.total > 0 ? Math.round((stats.close / stats.total) * 100) : 0;
+                tbodyHtml += `
+                    <tr class="hover:bg-slate-50/80 transition-colors">
+                        <td class="py-3 font-semibold text-slate-800">${witel}</td>
+                        <td class="py-3 text-center"><span class="text-emerald-600 font-extrabold">${stats.close}</span> / <span class="text-slate-700">${stats.total}</span> Project</td>
+                        <td class="py-3 text-right">
+                            <div class="flex items-center justify-end space-x-3">
+                                <span class="font-bold text-blue-600 w-10 text-right">${pct}%</span>
+                                <div class="w-24 bg-slate-100 rounded-full h-2 overflow-hidden hidden sm:block">
+                                    <div class="bg-blue-600 h-2 rounded-full" style="width: ${pct}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            if (Object.keys(witelMtdMap).length === 0) {
+                tbodyHtml = `<tr><td colspan="3" class="py-4 text-center text-slate-400">Tidak ada data untuk periode ini</td></tr>`;
+            }
+
+            document.getElementById("witelMtdTableBody").innerHTML = tbodyHtml;
+            document.getElementById("mtdLabel").innerText = selectedMonth === "ALL" ? "Semua Bulan (YTD)" : selectedMonth;
         }
 
         function renderCharts(witelMap, closeCount, inProgressCount) {
