@@ -33,15 +33,26 @@
                 </div>
             </div>
 
-            <!-- Controls (Dropdown Sheet Filter & Posisi Update Badge) -->
+            <!-- Controls (Dropdown Filter MTD & Posisi Update Badge) -->
             <div class="flex flex-wrap items-center gap-3">
-                <!-- Dropdown Filter -->
+                <!-- Dropdown Filter MTD (Bulan Target Close) -->
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-500">
                         <i class="fa-regular fa-calendar-days text-sm"></i>
                     </div>
-                    <select id="sheetSelect" onchange="fetchGsheetData()" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold rounded-xl pl-9 pr-8 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer">
-                        <option value="Sheet2" selected>Sheet2 (Aktif)</option>
+                    <select id="monthFilter" onchange="filterAndRenderDashboard()" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold rounded-xl pl-9 pr-8 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer">
+                        <option value="ALL">🔍 Tampilkan Semua (YTD)</option>
+                        <option value="01_JANUARI">Januari</option>
+                        <option value="02_FEBRUARI">Februari</option>
+                        <option value="03_MARET">Maret</option>
+                        <option value="04_APRIL" selected>April (Default)</option>
+                        <option value="05_MEI">Mei</option>
+                        <option value="06_JUNI">Juni</option>
+                        <option value="07_JULI">Juli</option>
+                        <option value="08_AGUSTUS">Agustus</option>
+                        <option value="09_SEPTEMBER">September</option>
+                        <option value="10_OKTOBER">Oktober</option>
+                        <option value="11_NOVEMBER">November</option>
                     </select>
                     <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-slate-400">
                         <i class="fa-solid fa-chevron-down text-xs"></i>
@@ -168,14 +179,15 @@
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbyjKnp8f-c6S5IzbO_6fEgFRLSNcrC1nidJVmRrHqsdgChpDP4CMyOlezjmzOWjCRHo-A/exec";
 
+        let globalData = [];
         let barChartInstance = null;
         let doughnutChartInstance = null;
 
         async function fetchGsheetData() {
             try {
                 const response = await fetch(API_URL);
-                const rawData = await response.json();
-                processAndRenderDashboard(rawData);
+                globalData = await response.json();
+                filterAndRenderDashboard();
             } catch (error) {
                 console.error("Gagal mengambil data dari Google Sheets:", error);
             }
@@ -187,8 +199,10 @@
             return parseFloat(cleanVal) || 0;
         }
 
-        function processAndRenderDashboard(data) {
-            let totalProject = data.length;
+        function filterAndRenderDashboard() {
+            const selectedMonth = document.getElementById("monthFilter").value;
+
+            let totalProject = 0;
             let totalNilaiBC = 0;
             let totalNilaiOBL = 0;
             let totalNilaiClose = 0;
@@ -197,21 +211,33 @@
 
             let witelDataMap = {};
 
-            data.forEach(item => {
-                let witel = (item["Witel"] || "Lainnya").toString().trim();
+            globalData.forEach(item => {
+                let targetBulan = (item["Bulan Target Close"] || "").toString().trim().toUpperCase();
+                let progresOBL = (item["PROGRES OBL"] || "").toString().trim().toLowerCase();
+
+                // Abaikan jika status PROGRES OBL blank/kosong
+                if (!progresOBL || progresOBL === "-") return;
+
+                // Filter MTD berdasarkan Kolom AN (Bulan Target Close), kecuali jika dipilih "ALL" (YTD)
+                if (selectedMonth !== "ALL") {
+                    if (!targetBulan.includes(selectedMonth)) {
+                        return; // Lewati jika tidak sesuai bulan yang dipilih
+                    }
+                }
+
+                totalProject++;
+
                 let nilaiBC = parseNumber(item["Nilai BC"]);
                 let nilaiOBL = parseNumber(item["NILAI OBL (exc PPN)"]);
-                
-                // Mengacu pada kolom TOMPS (Kolom AU)
-                let tomps = (item["TOMPS"] || "").toString().trim().toLowerCase();
+                let witel = (item["Witel"] || "Lainnya").toString().trim();
 
                 totalNilaiBC += nilaiBC;
                 totalNilaiOBL += nilaiOBL;
 
-                // Jika kolom TOMPS bernilai "close"
-                if (tomps === "close") {
+                // Cek status close berdasarkan PROGRES OBL
+                if (progresOBL === "closed") {
                     totalClose++;
-                    totalNilaiClose += nilaiOBL; // Nilai Close berdasarkan kolom P (NILAI OBL)
+                    totalNilaiClose += nilaiOBL; // Nilai Close mengacu ke Kolom P (NILAI OBL)
                 } else {
                     totalInProgress++;
                 }
@@ -224,6 +250,7 @@
 
             let progressPersen = totalProject > 0 ? Math.round((totalClose / totalProject) * 100) : 0;
 
+            // Update Tampilan Angka Card
             document.getElementById("valTotalProject").innerText = totalProject;
             document.getElementById("valNilaiBC").innerText = totalNilaiBC.toLocaleString("id-ID");
             document.getElementById("valNilaiOBL").innerText = totalNilaiOBL.toLocaleString("id-ID");
