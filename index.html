@@ -166,7 +166,6 @@
 
     <!-- Script JavaScript -->
     <script>
-        // URL Web App baru Anda sudah tersemat di sini:
         const API_URL = "https://script.google.com/macros/s/AKfycbyjKnp8f-c6S5IzbO_6fEgFRLSNcrC1nidJVmRrHqsdgChpDP4CMyOlezjmzOWjCRHo-A/exec";
 
         let barChartInstance = null;
@@ -202,14 +201,17 @@
                 let witel = (item["Witel"] || "Lainnya").toString().trim();
                 let nilaiBC = parseNumber(item["Nilai BC"]);
                 let nilaiOBL = parseNumber(item["NILAI OBL (exc PPN)"]);
-                let status = (item["Status Solution"] || "").toString().toLowerCase();
+                
+                // Mengacu pada kolom TOMPS (Kolom AU)
+                let tomps = (item["TOMPS"] || "").toString().trim().toLowerCase();
 
                 totalNilaiBC += nilaiBC;
                 totalNilaiOBL += nilaiOBL;
 
-                if (status.includes("close") || status.includes("approve")) {
+                // Jika kolom TOMPS bernilai "close"
+                if (tomps === "close") {
                     totalClose++;
-                    totalNilaiClose += nilaiBC;
+                    totalNilaiClose += nilaiOBL; // Nilai Close berdasarkan kolom P (NILAI OBL)
                 } else {
                     totalInProgress++;
                 }
