@@ -88,7 +88,7 @@
                 </div>
             </div>
 
-            <!-- Card 2: Total Nilai BC (RP) + Provcomp Info -->
+            <!-- Card 2: Total Nilai BC (RP) + Status Order (Provcomp) Info -->
             <div class="bg-white p-5 rounded-2xl border border-slate-200/70 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
                 <div class="flex items-start justify-between">
                     <div>
@@ -224,16 +224,6 @@
             return parseFloat(cleanVal) || 0;
         }
 
-        // Helper untuk mencari nilai berdasarkan kata kunci kolom secara fleksibel
-        function getValByKeyword(item, keyword) {
-            for (let key in item) {
-                if (key.toLowerCase().includes(keyword.toLowerCase())) {
-                    return item[key];
-                }
-            }
-            return "";
-        }
-
         function filterAndRenderDashboard() {
             const selectedMonth = document.getElementById("monthFilter").value;
 
@@ -269,8 +259,8 @@
                 let witel = (item["Witel"] || "Lainnya").toString().trim();
                 let tomps = (item["TOMPS"] || "").toString().trim().toLowerCase();
 
-                // Cek data Kolom BS (Provcomp) secara dinamis
-                let provcompVal = getValByKeyword(item, "provcomp");
+                // Cek data Kolom BS ("Status Order" / Provcomp)
+                let provcompVal = item["Status Order"] || item["STATUS ORDER"] || "";
                 if (provcompVal && provcompVal.toString().trim() !== "" && provcompVal.toString().trim() !== "-") {
                     totalProvcomp++;
                 }
