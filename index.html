@@ -88,7 +88,7 @@
                 </div>
             </div>
 
-            <!-- Card 2: Total Nilai BC (RP) + Status Order (Provcomp & Billcomp dari Kolom BS) -->
+            <!-- Card 2: Total Nilai BC (RP) + Status Order (Provcomp & Billcomp) -->
             <div class="bg-white p-5 rounded-2xl border border-slate-200/70 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
                 <div class="flex items-start justify-between">
                     <div>
@@ -133,7 +133,7 @@
                 </div>
             </div>
 
-            <!-- Card 4: Progress Keseluruhan -->
+            <!-- Card 4: Progress Keseluruhan + Progress Dokumen Delivery -->
             <div class="bg-white p-5 rounded-2xl border border-slate-200/70 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
                 <div class="flex items-start justify-between">
                     <div>
@@ -144,10 +144,24 @@
                         <i class="fa-solid fa-chart-line text-lg"></i>
                     </div>
                 </div>
-                <div class="mt-4 pt-2">
+                
+                <div class="mt-3 pt-2 border-t border-slate-50 space-y-2">
                     <!-- Progress Bar Component -->
-                    <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-                        <div id="progressBarFill" class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                        <div id="progressBarFill" class="bg-blue-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+
+                    <!-- Dropdown & Rasio Progress Dokumen Delivery (Kolom AS) -->
+                    <div class="pt-1">
+                        <div class="flex items-center justify-between text-xs font-medium text-slate-500">
+                            <span class="truncate pr-1">Doc Delivery:</span>
+                            <select id="docDeliveryFilter" onchange="filterAndRenderDashboard()" class="bg-slate-50 border border-slate-200 text-slate-700 text-[11px] font-semibold rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <option value="ALL">Semua Opsi</option>
+                            </select>
+                        </div>
+                        <p class="text-xs font-medium text-slate-500 text-right mt-0.5">
+                            Hasil: <span class="font-bold text-blue-600" id="valDocDeliveryRatio">0 / 0</span>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -210,15 +224,48 @@
         let globalData = [];
         let barChartInstance = null;
         let doughnutChartInstance = null;
+        let isDropdownPopulated = false;
 
         async function fetchGsheetData() {
             try {
                 const response = await fetch(API_URL);
                 globalData = await response.json();
+                populateDocDeliveryDropdown(globalData);
                 filterAndRenderDashboard();
             } catch (error) {
                 console.error("Gagal mengambil data dari Google Sheets:", error);
             }
+        }
+
+        function getValByKeyword(item, keyword) {
+            for (let key in item) {
+                if (key.toLowerCase().includes(keyword.toLowerCase())) {
+                    return item[key];
+                }
+            }
+            return "";
+        }
+
+        function populateDocDeliveryDropdown(data) {
+            if (isDropdownPopulated) return;
+            const selectEl = document.getElementById("docDeliveryFilter");
+            let optionsSet = new Set();
+
+            data.forEach(item => {
+                let val = getValByKeyword(item, "Progress Delivery") || getValByKeyword(item, "Progress Dokumen");
+                if (val && val.toString().trim() !== "" && val.toString().trim() !== "-") {
+                    optionsSet.add(val.toString().trim());
+                }
+            });
+
+            selectEl.innerHTML = '<option value="ALL">Semua Opsi</option>';
+            Array.from(optionsSet).sort().forEach(opt => {
+                let optEl = document.createElement("option");
+                optEl.value = opt;
+                optEl.innerText = opt;
+                selectEl.appendChild(optEl);
+            });
+            isDropdownPopulated = true;
         }
 
         function parseNumber(val) {
@@ -229,6 +276,7 @@
 
         function filterAndRenderDashboard() {
             const selectedMonth = document.getElementById("monthFilter").value;
+            const selectedDocDelivery = document.getElementById("docDeliveryFilter").value;
 
             let totalProject = 0;
             let totalNilaiBC = 0;
@@ -238,6 +286,7 @@
             let totalInProgress = 0;
             let totalProvcomp = 0;
             let totalBillcomp = 0;
+            let totalDocDeliveryMatch = 0;
 
             let witelDataMap = {};
             let witelMtdMap = {};
@@ -263,15 +312,26 @@
                 let witel = (item["Witel"] || "Lainnya").toString().trim();
                 let tomps = (item["TOMPS"] || "").toString().trim().toLowerCase();
 
-                // Ambil nilai dari Kolom BS ("Status Order") secara spesifik
+                // Status Order (Provcomp & Billcomp)
                 let statusOrderVal = (item["Status Order"] || item["STATUS ORDER"] || "").toString().trim().toLowerCase();
                 
-                // Pencarian spesifik mengandung kata 'provcomp' dan 'billcomp'
                 if (statusOrderVal === "provcomp" || statusOrderVal.includes("provcomp")) {
                     totalProvcomp++;
                 }
                 if (statusOrderVal === "billcomp" || statusOrderVal.includes("billcomp")) {
                     totalBillcomp++;
+                }
+
+                // Cek data Progress Dokumen Delivery (Kolom AS)
+                let docDeliveryVal = (getValByKeyword(item, "Progress Delivery") || getValByKeyword(item, "Progress Dokumen")).toString().trim();
+                if (selectedDocDelivery === "ALL") {
+                    if (docDeliveryVal && docDeliveryVal !== "" && docDeliveryVal !== "-") {
+                        totalDocDeliveryMatch++;
+                    }
+                } else {
+                    if (docDeliveryVal === selectedDocDelivery) {
+                        totalDocDeliveryMatch++;
+                    }
                 }
 
                 totalNilaiBC += nilaiBC;
@@ -285,13 +345,13 @@
                     totalInProgress++;
                 }
 
-                // Akumulasi bar chart per witel (berdasarkan nilai BC)
+                // Akumulasi bar chart per witel
                 if (!witelDataMap[witel]) {
                     witelDataMap[witel] = 0;
                 }
                 witelDataMap[witel] += nilaiBC;
 
-                // Akumulasi untuk Progress Project MTD per Witel (Close vs Total per Witel)
+                // Akumulasi untuk Progress Project MTD per Witel
                 if (!witelMtdMap[witel]) {
                     witelMtdMap[witel] = { total: 0, close: 0 };
                 }
@@ -309,6 +369,7 @@
             document.getElementById("valNilaiOBL").innerText = totalNilaiOBL.toLocaleString("id-ID");
             document.getElementById("valProvcompRatio").innerText = `${totalProvcomp} / ${totalProject}`;
             document.getElementById("valBillcompRatio").innerText = `${totalBillcomp} / ${totalProject}`;
+            document.getElementById("valDocDeliveryRatio").innerText = `${totalDocDeliveryMatch} / ${totalProject}`;
             document.getElementById("valProjectClose").innerText = totalClose;
             document.getElementById("valNilaiClose").innerText = totalNilaiClose.toLocaleString("id-ID");
             document.getElementById("valProgressPersen").innerText = progressPersen + "%";
