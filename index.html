@@ -88,7 +88,7 @@
                 </div>
             </div>
 
-            <!-- Card 2: Total Nilai BC (RP) -->
+            <!-- Card 2: Total Nilai BC (RP) + Provcomp Info -->
             <div class="bg-white p-5 rounded-2xl border border-slate-200/70 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
                 <div class="flex items-start justify-between">
                     <div>
@@ -99,9 +99,12 @@
                         <i class="fa-solid fa-wallet text-lg"></i>
                     </div>
                 </div>
-                <div class="mt-4 pt-2 border-t border-slate-50">
+                <div class="mt-4 pt-2 border-t border-slate-50 space-y-1">
                     <p class="text-xs font-medium text-slate-500">
                         Nilai OBL: <span class="font-bold text-slate-700" id="valNilaiOBL">0</span>
+                    </p>
+                    <p class="text-xs font-medium text-slate-500">
+                        Provcomp: <span class="font-bold text-slate-700" id="valProvcompRatio">0 / 0</span>
                     </p>
                 </div>
             </div>
@@ -221,6 +224,16 @@
             return parseFloat(cleanVal) || 0;
         }
 
+        // Helper untuk mencari nilai berdasarkan kata kunci kolom secara fleksibel
+        function getValByKeyword(item, keyword) {
+            for (let key in item) {
+                if (key.toLowerCase().includes(keyword.toLowerCase())) {
+                    return item[key];
+                }
+            }
+            return "";
+        }
+
         function filterAndRenderDashboard() {
             const selectedMonth = document.getElementById("monthFilter").value;
 
@@ -230,6 +243,7 @@
             let totalNilaiClose = 0;
             let totalClose = 0;
             let totalInProgress = 0;
+            let totalProvcomp = 0;
 
             let witelDataMap = {};
             let witelMtdMap = {};
@@ -254,6 +268,12 @@
                 let nilaiOBL = parseNumber(item["NILAI OBL (exc PPN)"]);
                 let witel = (item["Witel"] || "Lainnya").toString().trim();
                 let tomps = (item["TOMPS"] || "").toString().trim().toLowerCase();
+
+                // Cek data Kolom BS (Provcomp) secara dinamis
+                let provcompVal = getValByKeyword(item, "provcomp");
+                if (provcompVal && provcompVal.toString().trim() !== "" && provcompVal.toString().trim() !== "-") {
+                    totalProvcomp++;
+                }
 
                 totalNilaiBC += nilaiBC;
                 totalNilaiOBL += nilaiOBL;
@@ -288,6 +308,7 @@
             document.getElementById("valTotalProject").innerText = totalProject;
             document.getElementById("valNilaiBC").innerText = totalNilaiBC.toLocaleString("id-ID");
             document.getElementById("valNilaiOBL").innerText = totalNilaiOBL.toLocaleString("id-ID");
+            document.getElementById("valProvcompRatio").innerText = `${totalProvcomp} / ${totalProject}`;
             document.getElementById("valProjectClose").innerText = totalClose;
             document.getElementById("valNilaiClose").innerText = totalNilaiClose.toLocaleString("id-ID");
             document.getElementById("valProgressPersen").innerText = progressPersen + "%";
