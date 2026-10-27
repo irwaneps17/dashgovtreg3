@@ -88,7 +88,7 @@
                 </div>
             </div>
 
-            <!-- Card 2: Total Nilai BC (RP) + Provcomp & Billcomp Info -->
+            <!-- Card 2: Total Nilai BC (RP) + Status Order (Provcomp & Billcomp dari Kolom BS) -->
             <div class="bg-white p-5 rounded-2xl border border-slate-200/70 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
                 <div class="flex items-start justify-between">
                     <div>
@@ -227,15 +227,6 @@
             return parseFloat(cleanVal) || 0;
         }
 
-        function getValByKeyword(item, keyword) {
-            for (let key in item) {
-                if (key.toLowerCase().includes(keyword.toLowerCase())) {
-                    return item[key];
-                }
-            }
-            return "";
-        }
-
         function filterAndRenderDashboard() {
             const selectedMonth = document.getElementById("monthFilter").value;
 
@@ -272,15 +263,14 @@
                 let witel = (item["Witel"] || "Lainnya").toString().trim();
                 let tomps = (item["TOMPS"] || "").toString().trim().toLowerCase();
 
-                // Cek data Kolom BS ("Status Order" / Provcomp)
-                let provcompVal = item["Status Order"] || item["STATUS ORDER"] || "";
-                if (provcompVal && provcompVal.toString().trim() !== "" && provcompVal.toString().trim() !== "-") {
+                // Ambil nilai dari Kolom BS ("Status Order") secara spesifik
+                let statusOrderVal = (item["Status Order"] || item["STATUS ORDER"] || "").toString().trim().toLowerCase();
+                
+                // Pencarian spesifik mengandung kata 'provcomp' dan 'billcomp'
+                if (statusOrderVal === "provcomp" || statusOrderVal.includes("provcomp")) {
                     totalProvcomp++;
                 }
-
-                // Cek data Billcomp secara dinamis
-                let billcompVal = getValByKeyword(item, "billcomp") || getValByKeyword(item, "bill");
-                if (billcompVal && billcompVal.toString().trim() !== "" && billcompVal.toString().trim() !== "-") {
+                if (statusOrderVal === "billcomp" || statusOrderVal.includes("billcomp")) {
                     totalBillcomp++;
                 }
 
