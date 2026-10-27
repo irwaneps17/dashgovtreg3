@@ -237,23 +237,14 @@
             }
         }
 
-        // Helper untuk mencari nilai kolom secara fleksibel
-        function getValByKeyword(item, keyword) {
-            for (let key in item) {
-                if (key.toLowerCase().includes(keyword.toLowerCase())) {
-                    return item[key];
-                }
-            }
-            return "";
-        }
-
         function populateDocDeliveryDropdown(data) {
             if (isDropdownPopulated) return;
             const selectEl = document.getElementById("docDeliveryFilter");
             let optionsSet = new Set();
 
             data.forEach(item => {
-                let val = item["Progress Dokumen Delivery"] || item["PROGRESS DOKUMEN DELIVERY"] || getValByKeyword(item, "Progress Dokumen Delivery");
+                // Membaca langsung dari Kolom AS ("Progress Dokumen Delivery")
+                let val = item["Progress Dokumen Delivery"] || item["PROGRESS DOKUMEN DELIVERY"] || "";
                 if (val && val.toString().trim() !== "" && val.toString().trim() !== "-") {
                     optionsSet.add(val.toString().trim());
                 }
@@ -323,8 +314,8 @@
                     totalBillcomp++;
                 }
 
-                // Progress Dokumen Delivery (Kolom AS)
-                let docDeliveryVal = (item["Progress Dokumen Delivery"] || item["PROGRESS DOKUMEN DELIVERY"] || getValByKeyword(item, "Progress Dokumen Delivery")).toString().trim();
+                // Progress Dokumen Delivery (Kolom AS) secara spesifik
+                let docDeliveryVal = (item["Progress Dokumen Delivery"] || item["PROGRESS DOKUMEN DELIVERY"] || "").toString().trim();
                 if (selectedDocDelivery === "ALL") {
                     if (docDeliveryVal && docDeliveryVal !== "" && docDeliveryVal !== "-") {
                         totalDocDeliveryMatch++;
