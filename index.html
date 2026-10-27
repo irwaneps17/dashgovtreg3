@@ -133,7 +133,7 @@
                 </div>
             </div>
 
-            <!-- Card 4: Progress Keseluruhan + Progress Dokumen Delivery -->
+            <!-- Card 4: Progress Keseluruhan + Progress Dokumen Delivery (Kolom AS) -->
             <div class="bg-white p-5 rounded-2xl border border-slate-200/70 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
                 <div class="flex items-start justify-between">
                     <div>
@@ -152,15 +152,15 @@
                     </div>
 
                     <!-- Dropdown & Rasio Progress Dokumen Delivery (Kolom AS) -->
-                    <div class="pt-1">
+                    <div class="pt-1 space-y-1">
                         <div class="flex items-center justify-between text-xs font-medium text-slate-500">
                             <span class="truncate pr-1">Doc Delivery:</span>
                             <select id="docDeliveryFilter" onchange="filterAndRenderDashboard()" class="bg-slate-50 border border-slate-200 text-slate-700 text-[11px] font-semibold rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
                                 <option value="ALL">Semua Opsi</option>
                             </select>
                         </div>
-                        <p class="text-xs font-medium text-slate-500 text-right mt-0.5">
-                            Hasil: <span class="font-bold text-blue-600" id="valDocDeliveryRatio">0 / 0</span>
+                        <p class="text-xs font-medium text-slate-500 text-right">
+                            Rasio: <span class="font-bold text-slate-700" id="valDocDeliveryRatio">0 / 0</span>
                         </p>
                     </div>
                 </div>
@@ -237,6 +237,7 @@
             }
         }
 
+        // Helper untuk mencari nilai kolom secara fleksibel
         function getValByKeyword(item, keyword) {
             for (let key in item) {
                 if (key.toLowerCase().includes(keyword.toLowerCase())) {
@@ -252,7 +253,7 @@
             let optionsSet = new Set();
 
             data.forEach(item => {
-                let val = getValByKeyword(item, "Progress Delivery") || getValByKeyword(item, "Progress Dokumen");
+                let val = item["Progress Dokumen Delivery"] || item["PROGRESS DOKUMEN DELIVERY"] || getValByKeyword(item, "Progress Dokumen Delivery");
                 if (val && val.toString().trim() !== "" && val.toString().trim() !== "-") {
                     optionsSet.add(val.toString().trim());
                 }
@@ -312,7 +313,7 @@
                 let witel = (item["Witel"] || "Lainnya").toString().trim();
                 let tomps = (item["TOMPS"] || "").toString().trim().toLowerCase();
 
-                // Status Order (Provcomp & Billcomp)
+                // Status Order (Provcomp & Billcomp dari Kolom BS)
                 let statusOrderVal = (item["Status Order"] || item["STATUS ORDER"] || "").toString().trim().toLowerCase();
                 
                 if (statusOrderVal === "provcomp" || statusOrderVal.includes("provcomp")) {
@@ -322,14 +323,14 @@
                     totalBillcomp++;
                 }
 
-                // Cek data Progress Dokumen Delivery (Kolom AS)
-                let docDeliveryVal = (getValByKeyword(item, "Progress Delivery") || getValByKeyword(item, "Progress Dokumen")).toString().trim();
+                // Progress Dokumen Delivery (Kolom AS)
+                let docDeliveryVal = (item["Progress Dokumen Delivery"] || item["PROGRESS DOKUMEN DELIVERY"] || getValByKeyword(item, "Progress Dokumen Delivery")).toString().trim();
                 if (selectedDocDelivery === "ALL") {
                     if (docDeliveryVal && docDeliveryVal !== "" && docDeliveryVal !== "-") {
                         totalDocDeliveryMatch++;
                     }
                 } else {
-                    if (docDeliveryVal === selectedDocDelivery) {
+                    if (docDeliveryVal.toLowerCase() === selectedDocDelivery.toLowerCase()) {
                         totalDocDeliveryMatch++;
                     }
                 }
