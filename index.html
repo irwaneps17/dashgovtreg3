@@ -193,17 +193,17 @@
             </div>
         </div>
 
-        <!-- Section Tambahan: Progress Project per Witel (MTD) -->
+        <!-- Section Tambahan: Progress Project per Witel (MTD) dengan Sub-Witel Nama Pelanggan -->
         <div class="bg-slate-50/50 p-5 rounded-2xl border border-slate-200/60">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-sm font-bold text-slate-800"><i class="fa-solid fa-chart-column mr-2 text-blue-600"></i>Progress Project per Witel (MTD)</h2>
-                <span class="text-[11px] bg-blue-100 text-blue-800 px-2.5 py-1 rounded-md font-medium" id="mtdLabel">April</span>
+                <span class="text-[11px] bg-blue-100 text-blue-800 px-2.5 py-1 rounded-md font-medium" id="mtdLabel">Semua Bulan (YTD)</span>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs">
                     <thead>
                         <tr class="border-b border-slate-200 text-slate-400 font-bold uppercase">
-                            <th class="pb-2">Witel (Kolom C)</th>
+                            <th class="pb-2">Witel / Nama Pelanggan (Kolom C & F)</th>
                             <th class="pb-2 text-center">Project Close / Total Project (TOMPS Close)</th>
                             <th class="pb-2 text-right">Progress MTD (%)</th>
                         </tr>
@@ -245,13 +245,22 @@
             }
         }
 
+        function getValByKeyword(item, keyword) {
+            for (let key in item) {
+                if (key.toLowerCase().includes(keyword.toLowerCase())) {
+                    return item[key];
+                }
+            }
+            return "";
+        }
+
         function populateDocDeliveryDropdown(data) {
             if (isDropdownPopulated) return;
             const selectEl = document.getElementById("docDeliveryFilter");
             let optionsSet = new Set();
 
             data.forEach(item => {
-                let val = item["Progress Dokumen Delivery"] || item["PROGRESS DOKUMEN DELIVERY"] || "";
+                let val = item["Progress Dokumen Delivery"] || item["PROGRESS DOKUMEN DELIVERY"] || getValByKeyword(item, "Progress Dokumen Delivery");
                 if (val && val.toString().trim() !== "" && val.toString().trim() !== "-") {
                     optionsSet.add(val.toString().trim());
                 }
@@ -271,6 +280,21 @@
             if (!val || val === "-") return 0;
             let cleanVal = val.toString().replace(/,/g, '').replace(/Rp/g, '').trim();
             return parseFloat(cleanVal) || 0;
+        }
+
+        // Konversi Progress Dokumen Delivery (Kolom AS) ke persentase
+        function getDocDeliveryPercentage(docVal) {
+            if (!docVal) return 0;
+            let valStr = docVal.toString().trim().toLowerCase();
+            if (valStr.includes("00 not ready")) return 0;
+            if (valStr.includes("01 delivery")) return 50;
+            if (valStr.includes("02 collect evidence")) return 85;
+            if (valStr.includes("03 draft dr")) return 90;
+            if (valStr.includes("04 sirkulir")) return 95;
+            if (valStr.includes("05 cancel")) return 0;
+            if (valStr.includes("06 partially finish") || valStr.includes("06 partially finished")) return 100;
+            if (valStr.includes("07 finish") || valStr.includes("07 finished")) return 100;
+            return 0;
         }
 
         function filterAndRenderDashboard() {
@@ -309,6 +333,7 @@
                 let nilaiBC = parseNumber(item["Nilai BC"]);
                 let nilaiOBL = parseNumber(item["NILAI OBL (exc PPN)"]);
                 let witel = (item["Witel"] || "Lainnya").toString().trim();
+                let customerName = item["Nama Pelanggan"] || item["NAMA PELANGGAN"] || getValByKeyword(item, "pelanggan") || getValByKeyword(item, "customer") || "Pelanggan Tanpa Nama";
                 let tomps = (item["TOMPS"] || "").toString().trim().toLowerCase();
 
                 // Status Order (Provcomp & Billcomp dari Kolom BS)
@@ -321,8 +346,9 @@
                     totalBillcomp++;
                 }
 
-                // Progress Dokumen Delivery (Kolom AS) secara spesifik
-                let docDeliveryVal = (item["Progress Dokumen Delivery"] || item["PROGRESS DOKUMEN DELIVERY"] || "").toString().trim();
+                // Progress Dokumen Delivery (Kolom AS)
+                let docDeliveryVal = (item["Progress Dokumen Delivery"] || item["PROGRESS DOKUMEN DELIVERY"] || getValByKeyword(item, "Progress Dokumen Delivery")).toString().trim();
+                
                 if (selectedDocDelivery === "ALL") {
                     if (docDeliveryVal && docDeliveryVal !== "" && docDeliveryVal !== "-") {
                         totalDocDeliveryMatch++;
@@ -350,14 +376,19 @@
                 }
                 witelDataMap[witel] += nilaiBC;
 
-                // Akumulasi untuk Progress Project MTD per Witel
+                // Akumulasi untuk Progress Project MTD per Witel & Detail Pelanggan (Kolom F & AS)
                 if (!witelMtdMap[witel]) {
-                    witelMtdMap[witel] = { total: 0, close: 0 };
+                    witelMtdMap[witel] = { total: 0, close: 0, customers: [] };
                 }
                 witelMtdMap[witel].total++;
                 if (tomps === "close") {
                     witelMtdMap[witel].close++;
                 }
+
+                witelMtdMap[witel].customers.push({
+                    name: customerName,
+                    pct: getDocDeliveryPercentage(docDeliveryVal)
+                });
             });
 
             let progressPersen = totalProject > 0 ? Math.round((totalClose / totalProject) * 100) : 0;
@@ -375,7 +406,7 @@
             
             document.getElementById("progressBarFill").style.width = progressPersen + "%";
 
-            // Render tabel MTD per Witel
+            // Render tabel MTD per Witel dengan Sub-Witel Pelanggan
             renderWitelMtdTable(witelMtdMap, selectedMonth);
 
             // Render Grafik
@@ -386,21 +417,39 @@
             let tbodyHtml = "";
             Object.keys(witelMtdMap).sort().forEach(witel => {
                 let stats = witelMtdMap[witel];
-                let pct = stats.total > 0 ? Math.round((stats.close / stats.total) * 100) : 0;
+                let witelPct = stats.total > 0 ? Math.round((stats.close / stats.total) * 100) : 0;
+
+                // Baris Utama Witel
                 tbodyHtml += `
-                    <tr class="hover:bg-slate-50/80 transition-colors">
-                        <td class="py-3 font-semibold text-slate-800">${witel}</td>
-                        <td class="py-3 text-center"><span class="text-emerald-600 font-extrabold">${stats.close}</span> / <span class="text-slate-700">${stats.total}</span> Project</td>
-                        <td class="py-3 text-right">
-                            <div class="flex items-center justify-end space-x-3">
-                                <span class="font-bold text-blue-600 w-10 text-right">${pct}%</span>
-                                <div class="w-24 bg-slate-100 rounded-full h-2 overflow-hidden hidden sm:block">
-                                    <div class="bg-blue-600 h-2 rounded-full" style="width: ${pct}%"></div>
-                                </div>
-                            </div>
+                    <tr class="bg-slate-100/60 font-bold text-slate-800">
+                        <td class="py-2.5 px-3">${witel}</td>
+                        <td class="py-2.5 text-center"><span class="text-emerald-600">${stats.close}</span> / ${stats.total} Project</td>
+                        <td class="py-2.5 text-right pr-3">
+                            <span class="text-blue-600">${witelPct}%</span>
                         </td>
                     </tr>
                 `;
+
+                // Baris Sub-Witel: Nama Pelanggan (Kolom F) & Progress dari Kolom AS
+                stats.customers.forEach(cust => {
+                    tbodyHtml += `
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="py-2 pl-6 pr-3 text-slate-600 font-normal flex items-center space-x-2">
+                                <span class="text-slate-400">-</span>
+                                <span class="truncate">${cust.name}</span>
+                            </td>
+                            <td class="py-2 text-center text-slate-400">-</td>
+                            <td class="py-2 text-right pr-3">
+                                <div class="flex items-center justify-end space-x-3">
+                                    <span class="font-semibold text-slate-700 w-10 text-right">${cust.pct}%</span>
+                                    <div class="w-24 bg-slate-100 rounded-full h-1.5 overflow-hidden hidden sm:block">
+                                        <div class="bg-blue-500 h-1.5 rounded-full" style="width: ${cust.pct}%"></div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
             });
 
             if (Object.keys(witelMtdMap).length === 0) {
