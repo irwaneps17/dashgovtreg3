@@ -17,7 +17,7 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col p-2 sm:p-4">
 
-    <!-- Container Utama Tampilan Card Dashboard (Padding & Gap Dikecilkan) -->
+    <!-- Container Utama Tampilan Card Dashboard -->
     <div class="max-w-7xl mx-auto w-full bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 space-y-4">
         
         <!-- Header Navbar / Top Controls -->
@@ -67,7 +67,7 @@
             </div>
         </div>
 
-        <!-- 4 Key Metric Cards (Padding Ringkas) -->
+        <!-- 4 Key Metric Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             
             <!-- Card 1: Total Project -->
@@ -166,7 +166,7 @@
 
         </div>
 
-        <!-- Section Grafik & Visualisasi (Tinggi Grafik Dikecilkan ke h-48) -->
+        <!-- Section Grafik & Visualisasi -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
             <!-- Bar Chart: Distribusi per Witel -->
             <div class="bg-slate-50/50 p-3.5 rounded-xl border border-slate-200/60 lg:col-span-2">
@@ -191,7 +191,7 @@
             </div>
         </div>
 
-        <!-- Section Tambahan: Progress Project per Witel (Tabel Ringkas) -->
+        <!-- Section Tambahan: Progress Project per Witel dengan Kolom Mitra OBL (Kolom H) -->
         <div class="bg-slate-50/50 p-3.5 rounded-xl border border-slate-200/60">
             <div class="flex items-center justify-between mb-2">
                 <h2 class="text-xs font-bold text-slate-800"><i class="fa-solid fa-chart-column mr-1.5 text-blue-600"></i>Progress Project per Witel (MTD)</h2>
@@ -202,6 +202,7 @@
                     <thead>
                         <tr class="border-b border-slate-200 text-slate-400 font-bold uppercase text-[10px]">
                             <th class="pb-1.5">Witel / Nama Pelanggan (Kolom C & F)</th>
+                            <th class="pb-1.5 text-center">Mitra OBL (Kolom H)</th>
                             <th class="pb-1.5 text-center">Project Close / Total Project (TOMPS Close)</th>
                             <th class="pb-1.5 text-right">Progress MTD (%)</th>
                         </tr>
@@ -328,6 +329,7 @@
                 let nilaiOBL = parseNumber(item["NILAI OBL (exc PPN)"]);
                 let witel = (item["Witel"] || "Lainnya").toString().trim();
                 let customerName = item["Nama Pelanggan"] || item["NAMA PELANGGAN"] || getValByKeyword(item, "pelanggan") || getValByKeyword(item, "customer") || "Pelanggan Tanpa Nama";
+                let mitraOBL = item["Mitra OBL"] || item["MITRA OBL"] || item["Mitra"] || getValByKeyword(item, "mitra") || "-";
                 let tomps = (item["TOMPS"] || "").toString().trim().toLowerCase();
 
                 let statusOrderVal = (item["Status Order"] || item["STATUS ORDER"] || "").toString().trim().toLowerCase();
@@ -362,6 +364,7 @@
 
                 witelMtdMap[witel].customers.push({
                     name: customerName,
+                    mitra: mitraOBL,
                     pct: getDocDeliveryPercentage(docDeliveryVal)
                 });
             });
@@ -393,6 +396,7 @@
                 tbodyHtml += `
                     <tr class="bg-slate-100/60 font-bold text-slate-800">
                         <td class="py-1.5 px-2.5">${witel}</td>
+                        <td class="py-1.5 text-center text-slate-400">-</td>
                         <td class="py-1.5 text-center"><span class="text-emerald-600">${stats.close}</span> / ${stats.total} Project</td>
                         <td class="py-1.5 text-right pr-2.5">
                             <span class="text-blue-600">${witelPct}%</span>
@@ -407,6 +411,7 @@
                                 <span class="text-slate-400">-</span>
                                 <span class="truncate">${cust.name}</span>
                             </td>
+                            <td class="py-1 text-center text-slate-600 font-medium">${cust.mitra}</td>
                             <td class="py-1 text-center text-slate-400">-</td>
                             <td class="py-1 text-right pr-2.5">
                                 <div class="flex items-center justify-end space-x-2">
@@ -422,7 +427,7 @@
             });
 
             if (Object.keys(witelMtdMap).length === 0) {
-                tbodyHtml = `<tr><td colspan="3" class="py-3 text-center text-slate-400">Tidak ada data untuk periode ini</td></tr>`;
+                tbodyHtml = `<tr><td colspan="4" class="py-3 text-center text-slate-400">Tidak ada data untuk periode ini</td></tr>`;
             }
 
             document.getElementById("witelMtdTableBody").innerHTML = tbodyHtml;
