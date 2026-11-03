@@ -210,9 +210,9 @@
 
         </div>
 
-        <!-- Section Grafik & Visualisasi (3 Kolom: Nilai BC per Bulan, Nilai BC per Witel, & Status Penyelesaian) -->
+        <!-- Section Grafik & Visualisasi -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
-            <!-- Bar Chart: Distribusi Nilai BC per Bulan (Baru) -->
+            <!-- Bar Chart: Distribusi Nilai BC per Bulan (Tanpa angka & berurutan) -->
             <div class="bg-slate-50/50 p-3.5 rounded-xl border border-slate-200/60">
                 <div class="flex items-center justify-between mb-2">
                     <h2 class="text-xs font-bold text-slate-800">Distribusi Nilai BC per Bulan</h2>
@@ -424,7 +424,12 @@
                 let nilaiBC = parseNumber(item["Nilai BC"]);
                 let nilaiOBL = parseNumber(item["NILAI OBL (exc PPN)"]);
                 let witel = (item["Witel"] || "Lainnya").toString().trim();
-                let bulanTarget = (item["Bulan Target Close"] || "Lainnya").toString().trim();
+                
+                // Membersihkan teks bulan (menghapus angka dan underscore, misal "04_APRIL" menjadi "APRIL")
+                let rawBulan = (item["Bulan Target Close"] || "Lainnya").toString().trim();
+                let cleanBulan = rawBulan.replace(/^\d+[\s_]*/, '').toUpperCase();
+                if (!cleanBulan) cleanBulan = "LAINNYA";
+
                 let customerName = item["Nama Pelanggan"] || item["NAMA PELANGGAN"] || getValByKeyword(item, "pelanggan") || getValByKeyword(item, "customer") || "Pelanggan Tanpa Nama";
                 let mitraOBL = item["Mitra OBL"] || item["MITRA OBL"] || item["Mitra"] || getValByKeyword(item, "mitra") || "-";
                 let tomps = (item["TOMPS"] || "").toString().trim().toLowerCase();
@@ -457,13 +462,11 @@
                     totalInProgress++;
                 }
 
-                // Akumulasi bar chart per witel
                 if (!witelDataMap[witel]) witelDataMap[witel] = 0;
                 witelDataMap[witel] += nilaiBC;
 
-                // Akumulasi bar chart per bulan
-                if (!monthDataMap[bulanTarget]) monthDataMap[bulanTarget] = 0;
-                monthDataMap[bulanTarget] += nilaiBC;
+                if (!monthDataMap[cleanBulan]) monthDataMap[cleanBulan] = 0;
+                monthDataMap[cleanBulan] += nilaiBC;
 
                 if (!witelMtdMap[witel]) {
                     witelMtdMap[witel] = { total: 0, close: 0, customers: [] };
@@ -544,9 +547,17 @@
         }
 
         function renderCharts(monthMap, witelMap, docStatusCounts) {
-            // Render Bar Chart Distribusi Nilai BC per Bulan (Baru di Kiri)
-            const monthLabels = Object.keys(monthMap);
-            const monthValues = Object.values(monthMap);
+            // Urutan kronologis bulan baku
+            const monthOrder = ["JANUARI", "FEBRUARI", "MARET", "APRIL", "MEI", "JUNI", "JULI", "AGUSTUS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DESEMBER"];
+            
+            // Sort bulan sesuai urutan kalender
+            const sortedMonths = Object.keys(monthMap).sort((a, b) => {
+                let indexA = monthOrder.indexOf(a);
+                let indexB = monthOrder.indexOf(b);
+                return (indexA === -1 ? 99 : indexA) - (indexB === -1 ? 99 : indexB);
+            });
+
+            const monthValues = sortedMonths.map(m => monthMap[m]);
 
             const ctxMonth = document.getElementById('monthBarChart').getContext('2d');
             if (monthBarChartInstance) monthBarChartInstance.destroy();
@@ -554,7 +565,7 @@
             monthBarChartInstance = new Chart(ctxMonth, {
                 type: 'bar',
                 data: {
-                    labels: monthLabels,
+                    labels: sortedMonths,
                     datasets: [{
                         label: 'Nilai BC (Rp)',
                         data: monthValues,
@@ -569,7 +580,6 @@
                 }
             });
 
-            // Render Bar Chart Distribusi Nilai BC per Witel (Di Tengah)
             const witelLabels = Object.keys(witelMap);
             const witelValues = Object.values(witelMap);
 
@@ -594,7 +604,6 @@
                 }
             });
 
-            // Render Doughnut Chart Status Penyelesaian (Di Kanan)
             const docLabels = Object.keys(docStatusCounts);
             const docValues = Object.values(docStatusCounts);
 
