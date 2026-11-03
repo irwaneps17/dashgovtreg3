@@ -56,7 +56,7 @@
         </div>
     </div>
 
-    <!-- Container Utama Tampilan Card Dashboard (Awalnya Disembunyikan) -->
+    <!-- Container Utama Tampilan Card Dashboard -->
     <div id="dashboardContainer" class="max-w-7xl mx-auto w-full bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 space-y-4 hidden">
         
         <!-- Header Navbar / Top Controls -->
@@ -210,10 +210,21 @@
 
         </div>
 
-        <!-- Section Grafik & Visualisasi -->
+        <!-- Section Grafik & Visualisasi (3 Kolom: Nilai BC per Bulan, Nilai BC per Witel, & Status Penyelesaian) -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
-            <!-- Bar Chart: Distribusi per Witel -->
-            <div class="bg-slate-50/50 p-3.5 rounded-xl border border-slate-200/60 lg:col-span-2">
+            <!-- Bar Chart: Distribusi Nilai BC per Bulan (Baru) -->
+            <div class="bg-slate-50/50 p-3.5 rounded-xl border border-slate-200/60">
+                <div class="flex items-center justify-between mb-2">
+                    <h2 class="text-xs font-bold text-slate-800">Distribusi Nilai BC per Bulan</h2>
+                    <span class="text-[10px] bg-white border border-slate-200 text-slate-500 px-2 py-0.5 rounded font-medium">YTD</span>
+                </div>
+                <div class="relative h-48">
+                    <canvas id="monthBarChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Bar Chart: Distribusi Nilai BC per Witel -->
+            <div class="bg-slate-50/50 p-3.5 rounded-xl border border-slate-200/60">
                 <div class="flex items-center justify-between mb-2">
                     <h2 class="text-xs font-bold text-slate-800">Distribusi Nilai BC per Witel</h2>
                     <span class="text-[10px] bg-white border border-slate-200 text-slate-500 px-2 py-0.5 rounded font-medium">Real-time Gsheet</span>
@@ -264,16 +275,15 @@
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbyjKnp8f-c6S5IzbO_6fEgFRLSNcrC1nidJVmRrHqsdgChpDP4CMyOlezjmzOWjCRHo-A/exec";
         
-        // --- KONFIGURASI KREDENSIAL LOGIN ---
         const VALID_EMAIL = "irwanepsagala@gmail.com";
         const VALID_PASSWORD = "Provcomp3737";
 
         let globalData = [];
+        let monthBarChartInstance = null;
         let barChartInstance = null;
         let doughnutChartInstance = null;
         let isDropdownPopulated = false;
 
-        // Cek status login saat halaman pertama kali dibuka
         window.addEventListener("DOMContentLoaded", () => {
             const isLogged = sessionStorage.getItem("isDashboardLoggedIn");
             if (isLogged === "true") {
@@ -393,6 +403,7 @@
             let totalDocDeliveryMatch = 0;
 
             let witelDataMap = {};
+            let monthDataMap = {};
             let witelMtdMap = {};
             let docStatusCounts = {};
 
@@ -413,6 +424,7 @@
                 let nilaiBC = parseNumber(item["Nilai BC"]);
                 let nilaiOBL = parseNumber(item["NILAI OBL (exc PPN)"]);
                 let witel = (item["Witel"] || "Lainnya").toString().trim();
+                let bulanTarget = (item["Bulan Target Close"] || "Lainnya").toString().trim();
                 let customerName = item["Nama Pelanggan"] || item["NAMA PELANGGAN"] || getValByKeyword(item, "pelanggan") || getValByKeyword(item, "customer") || "Pelanggan Tanpa Nama";
                 let mitraOBL = item["Mitra OBL"] || item["MITRA OBL"] || item["Mitra"] || getValByKeyword(item, "mitra") || "-";
                 let tomps = (item["TOMPS"] || "").toString().trim().toLowerCase();
@@ -445,8 +457,13 @@
                     totalInProgress++;
                 }
 
+                // Akumulasi bar chart per witel
                 if (!witelDataMap[witel]) witelDataMap[witel] = 0;
                 witelDataMap[witel] += nilaiBC;
+
+                // Akumulasi bar chart per bulan
+                if (!monthDataMap[bulanTarget]) monthDataMap[bulanTarget] = 0;
+                monthDataMap[bulanTarget] += nilaiBC;
 
                 if (!witelMtdMap[witel]) {
                     witelMtdMap[witel] = { total: 0, close: 0, customers: [] };
@@ -476,7 +493,7 @@
             document.getElementById("progressBarFill").style.width = progressPersen + "%";
 
             renderWitelMtdTable(witelMtdMap, selectedMonth);
-            renderCharts(witelDataMap, docStatusCounts);
+            renderCharts(monthDataMap, witelDataMap, docStatusCounts);
         }
 
         function renderWitelMtdTable(witelMtdMap, selectedMonth) {
@@ -526,7 +543,33 @@
             document.getElementById("mtdLabel").innerText = selectedMonth === "ALL" ? "Semua Bulan (YTD)" : selectedMonth;
         }
 
-        function renderCharts(witelMap, docStatusCounts) {
+        function renderCharts(monthMap, witelMap, docStatusCounts) {
+            // Render Bar Chart Distribusi Nilai BC per Bulan (Baru di Kiri)
+            const monthLabels = Object.keys(monthMap);
+            const monthValues = Object.values(monthMap);
+
+            const ctxMonth = document.getElementById('monthBarChart').getContext('2d');
+            if (monthBarChartInstance) monthBarChartInstance.destroy();
+
+            monthBarChartInstance = new Chart(ctxMonth, {
+                type: 'bar',
+                data: {
+                    labels: monthLabels,
+                    datasets: [{
+                        label: 'Nilai BC (Rp)',
+                        data: monthValues,
+                        backgroundColor: '#0ea5e9',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Render Bar Chart Distribusi Nilai BC per Witel (Di Tengah)
             const witelLabels = Object.keys(witelMap);
             const witelValues = Object.values(witelMap);
 
@@ -551,6 +594,7 @@
                 }
             });
 
+            // Render Doughnut Chart Status Penyelesaian (Di Kanan)
             const docLabels = Object.keys(docStatusCounts);
             const docValues = Object.values(docStatusCounts);
 
