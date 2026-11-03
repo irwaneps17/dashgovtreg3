@@ -179,7 +179,7 @@
                 </div>
             </div>
 
-            <!-- Doughnut Chart: Status Penyelesaian (Berdasarkan Progress Dokumen Delivery) -->
+            <!-- Doughnut Chart: Status Penyelesaian -->
             <div class="bg-slate-50/50 p-3.5 rounded-xl border border-slate-200/60">
                 <div class="flex items-center justify-between mb-2">
                     <h2 class="text-xs font-bold text-slate-800">Status Penyelesaian</h2>
@@ -310,8 +310,6 @@
 
             let witelDataMap = {};
             let witelMtdMap = {};
-
-            // Map hitungan opsi Progress Dokumen Delivery untuk Doughnut Chart
             let docStatusCounts = {};
 
             globalData.forEach(item => {
@@ -339,7 +337,6 @@
                 if (statusOrderVal === "provcomp" || statusOrderVal.includes("provcomp")) totalProvcomp++;
                 if (statusOrderVal === "billcomp" || statusOrderVal.includes("billcomp")) totalBillcomp++;
 
-                // Progress Dokumen Delivery (Kolom AS)
                 let docDeliveryVal = (item["Progress Dokumen Delivery"] || item["PROGRESS DOKUMEN DELIVERY"] || getValByKeyword(item, "Progress Dokumen Delivery")).toString().trim();
                 
                 if (docDeliveryVal && docDeliveryVal !== "" && docDeliveryVal !== "-") {
@@ -446,7 +443,6 @@
         }
 
         function renderCharts(witelMap, docStatusCounts) {
-            // Render Bar Chart Nilai BC per Witel
             const witelLabels = Object.keys(witelMap);
             const witelValues = Object.values(witelMap);
 
@@ -471,11 +467,9 @@
                 }
             });
 
-            // Render Doughnut Chart berdasarkan Rincian Progress Dokumen Delivery (Kolom AS)
             const docLabels = Object.keys(docStatusCounts);
             const docValues = Object.values(docStatusCounts);
 
-            // Palette Warna Modern
             const colorPalette = [
                 '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', 
                 '#ec4899', '#06b6d4', '#64748b', '#ef4444'
@@ -504,7 +498,6 @@
                             labels: { 
                                 boxWidth: 8, 
                                 font: { size: 9 },
-                                // Menampilkan Nama Status + Jumlah Project di Legend
                                 generateLabels: function(chart) {
                                     const data = chart.data;
                                     if (data.labels.length && data.datasets.length) {
@@ -525,7 +518,11 @@
                             } 
                         },
                         tooltip: {
+                            // Mengatur callback agar tooltip hanya menampilkan label dan jumlah project tanpa teks ganda
                             callbacks: {
+                                title: function() {
+                                    return '';
+                                },
                                 label: function(context) {
                                     return ` ${context.label}: ${context.raw} Project`;
                                 }
