@@ -72,8 +72,21 @@
                 </div>
             </div>
 
-            <!-- Controls (Dropdown Filter MTD, Posisi Update Badge, & Tombol Logout) -->
+            <!-- Controls (Dropdown Filter Witel, Dropdown Filter MTD, Posisi Update Badge, & Tombol Logout) -->
             <div class="flex flex-wrap items-center gap-2">
+                <!-- Dropdown Filter Witel (Baru) -->
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none text-slate-500">
+                        <i class="fa-solid fa-building text-xs"></i>
+                    </div>
+                    <select id="witelFilter" onchange="filterAndRenderDashboard()" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg pl-8 pr-7 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer">
+                        <option value="ALL" selected>🏢 Semua Witel</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-slate-400">
+                        <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                    </div>
+                </div>
+
                 <!-- Dropdown Filter MTD -->
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none text-slate-500">
@@ -212,7 +225,7 @@
 
         <!-- Section Grafik & Visualisasi -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
-            <!-- Bar Chart: Distribusi Nilai BC per Bulan (Tanpa angka & berurutan) -->
+            <!-- Bar Chart: Distribusi Nilai BC per Bulan -->
             <div class="bg-slate-50/50 p-3.5 rounded-xl border border-slate-200/60">
                 <div class="flex items-center justify-between mb-2">
                     <h2 class="text-xs font-bold text-slate-800">Distribusi Nilai BC per Bulan</h2>
@@ -330,7 +343,7 @@
                 setAutoUpdateDate();
                 const response = await fetch(API_URL);
                 globalData = await response.json();
-                populateDocDeliveryDropdown(globalData);
+                populateDropdowns(globalData);
                 filterAndRenderDashboard();
             } catch (error) {
                 console.error("Gagal mengambil data dari Google Sheets:", error);
@@ -346,25 +359,44 @@
             return "";
         }
 
-        function populateDocDeliveryDropdown(data) {
+        function populateDropdowns(data) {
             if (isDropdownPopulated) return;
-            const selectEl = document.getElementById("docDeliveryFilter");
-            let optionsSet = new Set();
+
+            // Populate Witel Dropdown
+            const witelSelectEl = document.getElementById("witelFilter");
+            let witelSet = new Set();
+
+            // Populate Doc Delivery Dropdown
+            const docSelectEl = document.getElementById("docDeliveryFilter");
+            let docSet = new Set();
 
             data.forEach(item => {
-                let val = item["Progress Dokumen Delivery"] || item["PROGRESS DOKUMEN DELIVERY"] || getValByKeyword(item, "Progress Dokumen Delivery");
-                if (val && val.toString().trim() !== "" && val.toString().trim() !== "-") {
-                    optionsSet.add(val.toString().trim());
+                let witelVal = (item["Witel"] || "").toString().trim();
+                if (witelVal && witelVal !== "-") witelSet.add(witelVal);
+
+                let docVal = item["Progress Dokumen Delivery"] || item["PROGRESS DOKUMEN DELIVERY"] || getValByKeyword(item, "Progress Dokumen Delivery");
+                if (docVal && docVal.toString().trim() !== "" && docVal.toString().trim() !== "-") {
+                    docSet.add(docVal.toString().trim());
                 }
             });
 
-            selectEl.innerHTML = '<option value="ALL">Semua Opsi</option>';
-            Array.from(optionsSet).sort().forEach(opt => {
+            // Append Witel options
+            Array.from(witelSet).sort().forEach(w => {
+                let opt = document.createElement("option");
+                opt.value = w;
+                opt.innerText = w;
+                witelSelectEl.appendChild(opt);
+            });
+
+            // Append Doc Delivery options
+            docSelectEl.innerHTML = '<option value="ALL">Semua Opsi</option>';
+            Array.from(docSet).sort().forEach(opt => {
                 let optEl = document.createElement("option");
                 optEl.value = opt;
                 optEl.innerText = opt;
-                selectEl.appendChild(optEl);
+                docSelectEl.appendChild(optEl);
             });
+
             isDropdownPopulated = true;
         }
 
@@ -389,6 +421,7 @@
         }
 
         function filterAndRenderDashboard() {
+            const selectedWitel = document.getElementById("witelFilter").value;
             const selectedMonth = document.getElementById("monthFilter").value;
             const selectedDocDelivery = document.getElementById("docDeliveryFilter").value;
 
@@ -410,22 +443,25 @@
             globalData.forEach(item => {
                 let targetBulan = (item["Bulan Target Close"] || "").toString().trim().toUpperCase();
                 let progresOBL = (item["PROGRES OBL"] || "").toString().trim().toLowerCase();
+                let witel = (item["Witel"] || "Lainnya").toString().trim();
 
                 if (!progresOBL || progresOBL === "-") return;
 
-                if (selectedMonth !== "ALL") {
-                    if (!targetBulan.includes(selectedMonth)) {
-                        return; 
-                    }
+                // Filter Witel
+                if (selectedWitel !== "ALL" && witel !== selectedWitel) {
+                    return;
+                }
+
+                // Filter Bulan MTD
+                if (selectedMonth !== "ALL" && !targetBulan.includes(selectedMonth)) {
+                    return;
                 }
 
                 totalProject++;
 
                 let nilaiBC = parseNumber(item["Nilai BC"]);
                 let nilaiOBL = parseNumber(item["NILAI OBL (exc PPN)"]);
-                let witel = (item["Witel"] || "Lainnya").toString().trim();
                 
-                // Membersihkan teks bulan (menghapus angka dan underscore, misal "04_APRIL" menjadi "APRIL")
                 let rawBulan = (item["Bulan Target Close"] || "Lainnya").toString().trim();
                 let cleanBulan = rawBulan.replace(/^\d+[\s_]*/, '').toUpperCase();
                 if (!cleanBulan) cleanBulan = "LAINNYA";
@@ -547,10 +583,8 @@
         }
 
         function renderCharts(monthMap, witelMap, docStatusCounts) {
-            // Urutan kronologis bulan baku
             const monthOrder = ["JANUARI", "FEBRUARI", "MARET", "APRIL", "MEI", "JUNI", "JULI", "AGUSTUS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DESEMBER"];
             
-            // Sort bulan sesuai urutan kalender
             const sortedMonths = Object.keys(monthMap).sort((a, b) => {
                 let indexA = monthOrder.indexOf(a);
                 let indexB = monthOrder.indexOf(b);
