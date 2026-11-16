@@ -75,49 +75,17 @@
                 <nav class="space-y-1">
                     <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2.5 mb-2">Menu Utama</p>
                     
-                    <!-- Menu 1: Overview Dashboard -->
-                    <a href="#" id="navOverview" onclick="switchView('OVERVIEW', 'ALL', event)" class="flex items-center space-x-2.5 px-3 py-2.5 rounded-xl bg-indigo-950 text-white text-xs font-semibold shadow-xs transition-all">
+                    <!-- Menu Overview -->
+                    <a href="#" id="navOverview" onclick="switchView('OVERVIEW', event)" class="flex items-center space-x-2.5 px-3 py-2.5 rounded-xl bg-indigo-950 text-white text-xs font-semibold shadow-xs transition-all">
                         <i class="fa-solid fa-table-columns w-4 text-center"></i>
                         <span>Overview Dashboard</span>
                     </a>
-
-                    <!-- Menu 2: BAST Termin (Collapsible) -->
-                    <div class="pt-1">
-                        <button type="button" id="navTerminParent" onclick="toggleTerminMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 text-xs font-semibold transition-all cursor-pointer">
-                            <div class="flex items-center space-x-2.5">
-                                <i class="fa-solid fa-file-signature w-4 text-center"></i>
-                                <span>BAST Termin</span>
-                            </div>
-                            <i id="terminChevron" class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200"></i>
-                        </button>
-
-                        <!-- Submenu Termin I - V -->
-                        <div id="terminSubmenu" class="mt-1 pl-4 pr-1 space-y-1 hidden">
-                            <a href="#" id="subTerminALL" onclick="switchView('TERMIN', 'ALL', event)" class="termin-sub-item flex items-center justify-between px-3 py-2 rounded-lg text-[11px] font-medium text-slate-600 hover:bg-slate-100 transition-all">
-                                <span>Semua Termin (I - V)</span>
-                            </a>
-                            <a href="#" id="subTermin1" onclick="switchView('TERMIN', '1', event)" class="termin-sub-item flex items-center justify-between px-3 py-2 rounded-lg text-[11px] font-medium text-slate-600 hover:bg-slate-100 transition-all">
-                                <span>Termin I</span>
-                                <span class="text-[9px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-semibold">BV</span>
-                            </a>
-                            <a href="#" id="subTermin2" onclick="switchView('TERMIN', '2', event)" class="termin-sub-item flex items-center justify-between px-3 py-2 rounded-lg text-[11px] font-medium text-slate-600 hover:bg-slate-100 transition-all">
-                                <span>Termin II</span>
-                                <span class="text-[9px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-semibold">BW</span>
-                            </a>
-                            <a href="#" id="subTermin3" onclick="switchView('TERMIN', '3', event)" class="termin-sub-item flex items-center justify-between px-3 py-2 rounded-lg text-[11px] font-medium text-slate-600 hover:bg-slate-100 transition-all">
-                                <span>Termin III</span>
-                                <span class="text-[9px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-semibold">BX</span>
-                            </a>
-                            <a href="#" id="subTermin4" onclick="switchView('TERMIN', '4', event)" class="termin-sub-item flex items-center justify-between px-3 py-2 rounded-lg text-[11px] font-medium text-slate-600 hover:bg-slate-100 transition-all">
-                                <span>Termin IV</span>
-                                <span class="text-[9px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-semibold">BY</span>
-                            </a>
-                            <a href="#" id="subTermin5" onclick="switchView('TERMIN', '5', event)" class="termin-sub-item flex items-center justify-between px-3 py-2 rounded-lg text-[11px] font-medium text-slate-600 hover:bg-slate-100 transition-all">
-                                <span>Termin V</span>
-                                <span class="text-[9px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-semibold">BZ</span>
-                            </a>
-                        </div>
-                    </div>
+                    
+                    <!-- Menu BAST Termin (Navigasi View) -->
+                    <a href="#" id="navTermin" onclick="switchView('TERMIN', event)" class="flex items-center space-x-2.5 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 text-xs font-semibold transition-all">
+                        <i class="fa-solid fa-file-signature w-4 text-center"></i>
+                        <span>Monitoring BAST Termin</span>
+                    </a>
                 </nav>
 
                 <!-- Section Filter Data di Sidebar -->
@@ -161,6 +129,26 @@
                                 <option value="09_SEPTEMBER">September</option>
                                 <option value="10_OKTOBER">Oktober</option>
                                 <option value="11_NOVEMBER">November</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-slate-400">
+                                <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filter Termin (Pindahan Kotak Merah) -->
+                    <div class="space-y-1.5" id="terminFilterContainer">
+                        <label class="text-[11px] font-semibold text-slate-600 flex items-center px-1">
+                            <i class="fa-solid fa-layer-group mr-1.5 text-slate-400 text-xs"></i> Filter Termin
+                        </label>
+                        <div class="relative">
+                            <select id="terminFilter" onchange="filterAndRenderDashboard()" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold rounded-xl pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer">
+                                <option value="ALL" selected>Semua Termin (I - V)</option>
+                                <option value="1">Termin I</option>
+                                <option value="2">Termin II</option>
+                                <option value="3">Termin III</option>
+                                <option value="4">Termin IV</option>
+                                <option value="5">Termin V</option>
                             </select>
                             <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-slate-400">
                                 <i class="fa-solid fa-chevron-down text-[10px]"></i>
@@ -373,7 +361,7 @@
             </div>
 
             <!-- ========================================================= -->
-            <!-- VIEW 2: BAST TERMIN (KOLOM BV s.d. BZ)                    -->
+            <!-- VIEW 2: BAST TERMIN                                       -->
             <!-- ========================================================= -->
             <div id="terminSection" class="space-y-4 hidden">
                 <!-- Summary Cards Khusus Project Termin -->
@@ -401,7 +389,7 @@
                     <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
                         <div>
                             <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">SUMBER DATA GSHEET</p>
-                            <h3 class="text-sm font-bold text-emerald-700 mt-1">Kolom BV s.d. BZ</h3>
+                            <h3 class="text-sm font-bold text-emerald-700 mt-1">GSheet Irwan</h3>
                             <p class="text-[10px] text-slate-400">Parameter Prosentase Progress</p>
                         </div>
                         <div class="bg-emerald-50 text-emerald-600 p-2.5 rounded-xl">
@@ -456,9 +444,7 @@
         let doughnutChartInstance = null;
         let isDropdownPopulated = false;
 
-        // State Navigasi View ('OVERVIEW' atau 'TERMIN') & Sub-termin ('ALL', '1', '2', '3', '4', '5')
         let currentView = "OVERVIEW";
-        let currentTerminFilter = "ALL";
 
         window.addEventListener("DOMContentLoaded", () => {
             const isLogged = sessionStorage.getItem("isDashboardLoggedIn");
@@ -495,64 +481,36 @@
             fetchGsheetData();
         }
 
-        function toggleTerminMenu() {
-            const submenu = document.getElementById("terminSubmenu");
-            const chevron = document.getElementById("terminChevron");
-            submenu.classList.toggle("hidden");
-            chevron.classList.toggle("rotate-180");
-        }
-
-        function switchView(viewMode, terminCode = "ALL", event = null) {
+        function switchView(viewMode, event = null) {
             if (event) event.preventDefault();
             currentView = viewMode;
-            currentTerminFilter = terminCode;
 
             const navOverview = document.getElementById("navOverview");
-            const navTerminParent = document.getElementById("navTerminParent");
-            const terminSubmenu = document.getElementById("terminSubmenu");
-            const terminChevron = document.getElementById("terminChevron");
-
+            const navTermin = document.getElementById("navTermin");
             const overviewSection = document.getElementById("overviewSection");
             const terminSection = document.getElementById("terminSection");
-
-            // Reset styling sub-item
-            document.querySelectorAll(".termin-sub-item").forEach(el => {
-                el.classList.remove("bg-indigo-950", "text-white", "font-semibold");
-                el.classList.add("text-slate-600", "hover:bg-slate-100");
-            });
+            const terminFilterContainer = document.getElementById("terminFilterContainer");
 
             if (viewMode === "OVERVIEW") {
-                // Highlight Overview
                 navOverview.classList.add("bg-indigo-950", "text-white", "shadow-xs");
                 navOverview.classList.remove("text-slate-600", "hover:bg-slate-50");
 
-                navTerminParent.classList.remove("bg-indigo-50", "text-indigo-950");
-                navTerminParent.classList.add("text-slate-600");
+                navTermin.classList.remove("bg-indigo-950", "text-white", "shadow-xs");
+                navTermin.classList.add("text-slate-600", "hover:bg-slate-50");
 
                 overviewSection.classList.remove("hidden");
                 terminSection.classList.add("hidden");
+                terminFilterContainer.classList.add("hidden"); // Sembunyikan filter termin di overview
             } else if (viewMode === "TERMIN") {
-                // Pastikan submenu terbuka
-                terminSubmenu.classList.remove("hidden");
-                terminChevron.classList.add("rotate-180");
+                navTermin.classList.add("bg-indigo-950", "text-white", "shadow-xs");
+                navTermin.classList.remove("text-slate-600", "hover:bg-slate-50");
 
-                // Un-highlight Overview
                 navOverview.classList.remove("bg-indigo-950", "text-white", "shadow-xs");
                 navOverview.classList.add("text-slate-600", "hover:bg-slate-50");
 
-                // Highlight Parent Termin
-                navTerminParent.classList.add("bg-indigo-50", "text-indigo-950");
-                navTerminParent.classList.remove("text-slate-600");
-
-                // Highlight Submenu Aktif
-                const activeSub = document.getElementById(`subTermin${terminCode}`);
-                if (activeSub) {
-                    activeSub.classList.add("bg-indigo-950", "text-white", "font-semibold");
-                    activeSub.classList.remove("text-slate-600", "hover:bg-slate-100");
-                }
-
                 overviewSection.classList.add("hidden");
                 terminSection.classList.remove("hidden");
+                terminFilterContainer.classList.remove("hidden"); // Tampilkan filter termin di sidebar
             }
 
             filterAndRenderDashboard();
@@ -563,8 +521,9 @@
             document.getElementById("witelFilter").value = "ALL";
             document.getElementById("monthFilter").value = "ALL";
             document.getElementById("docDeliveryFilter").value = "ALL";
+            document.getElementById("terminFilter").value = "ALL";
             if (currentView !== "OVERVIEW") {
-                switchView("OVERVIEW", "ALL");
+                switchView("OVERVIEW");
             } else {
                 filterAndRenderDashboard();
             }
@@ -597,10 +556,8 @@
             return "";
         }
 
-        // Helper untuk mengambil nilai Termin I - V dari Kolom BV s.d. BZ (indeks 73 - 77 pada array keys)
         function getTerminRawValues(item) {
             const keys = Object.keys(item);
-            // Indeks kolom spreadsheet: A=0 ... Z=25, AA=26 ... AZ=51, BA=52 ... BV=73, BW=74, BX=75, BY=76, BZ=77
             const byIndex = [
                 keys[73] ? item[keys[73]] : "",
                 keys[74] ? item[keys[74]] : "",
@@ -609,7 +566,6 @@
                 keys[77] ? item[keys[77]] : ""
             ];
 
-            // Fallback pencarian berdasarkan nama header jika ada pergeseran kolom
             const findByPatterns = (patterns) => {
                 for (let k of keys) {
                     let lk = k.toLowerCase().trim();
@@ -672,7 +628,6 @@
             return parseFloat(cleanVal) || 0;
         }
 
-        // Konversi status ke angka persentase (sama persis dengan parameter Progress MTD)
         function getDocDeliveryPercentage(docVal) {
             if (docVal === null || docVal === undefined) return null;
             let valStr = docVal.toString().trim().toLowerCase();
@@ -687,7 +642,6 @@
             if (valStr.includes("06 partially finish") || valStr.includes("06 partially finished")) return 100;
             if (valStr.includes("07 finish") || valStr.includes("07 finished")) return 100;
 
-            // Jika sel sudah berupa angka persentase (misal "85%" atau 0.85)
             if (valStr.endsWith("%")) {
                 let num = parseFloat(valStr.replace("%", ""));
                 return isNaN(num) ? 0 : Math.round(num);
@@ -705,6 +659,7 @@
             const selectedWitel = document.getElementById("witelFilter").value;
             const selectedMonth = document.getElementById("monthFilter").value;
             const selectedDocDelivery = document.getElementById("docDeliveryFilter").value;
+            const selectedTermin = document.getElementById("terminFilter").value;
 
             const romanMap = { "ALL": "Semua Termin (I - V)", "1": "Termin I", "2": "Termin II", "3": "Termin III", "4": "Termin IV", "5": "Termin V" };
 
@@ -714,8 +669,8 @@
                 document.getElementById("pageMainTitle").innerText = "Dashboard Pengawalan Project Government";
             } else {
                 document.getElementById("breadcrumbCategory").innerText = "BAST Termin";
-                document.getElementById("breadcrumbTitle").innerText = `${romanMap[currentTerminFilter]} ${selectedWitel === "ALL" ? "(Semua Witel)" : "- " + selectedWitel}`;
-                document.getElementById("pageMainTitle").innerText = `Monitoring Progress ${romanMap[currentTerminFilter]}`;
+                document.getElementById("breadcrumbTitle").innerText = `${romanMap[selectedTermin]} ${selectedWitel === "ALL" ? "(Semua Witel)" : "- " + selectedWitel}`;
+                document.getElementById("pageMainTitle").innerText = `Monitoring Progress ${romanMap[selectedTermin]}`;
             }
 
             let totalProject = 0;
@@ -732,8 +687,6 @@
             let monthDataMap = {};
             let witelMtdMap = {};
             let docStatusCounts = {};
-
-            // Data khusus BAST Termin
             let terminProjectsList = [];
 
             globalData.forEach(item => {
@@ -819,7 +772,6 @@
                     pct: basePct
                 });
 
-                // Cek & Ekstrak Data BAST Termin (Kolom BV s.d. BZ)
                 const rawTermin = getTerminRawValues(item);
                 const p1 = getDocDeliveryPercentage(rawTermin.t1);
                 const p2 = getDocDeliveryPercentage(rawTermin.t2);
@@ -857,7 +809,7 @@
                 renderWitelMtdTable(witelMtdMap, selectedMonth);
                 renderCharts(monthDataMap, witelDataMap, docStatusCounts);
             } else {
-                renderTerminTable(terminProjectsList, currentTerminFilter);
+                renderTerminTable(terminProjectsList, selectedTermin);
             }
         }
 
@@ -876,7 +828,6 @@
         function renderTerminTable(projects, terminFilter) {
             const romanMap = { "ALL": "Semua Termin (I - V)", "1": "Termin I", "2": "Termin II", "3": "Termin III", "4": "Termin IV", "5": "Termin V" };
             
-            // Filter baris jika sub-menu spesifik dipilih (misal hanya project yang punya Termin II)
             const filteredProjects = projects.filter(p => {
                 if (terminFilter === "ALL") return true;
                 return p[`p${terminFilter}`] !== null;
@@ -919,7 +870,6 @@
                 return;
             }
 
-            // Sort berdasarkan Witel lalu Nama Pelanggan
             filteredProjects.sort((a, b) => a.witel.localeCompare(b.witel) || a.customer.localeCompare(b.customer));
 
             let rowsHtml = "";
@@ -1004,123 +954,4 @@
         function renderCharts(monthMap, witelMap, docStatusCounts) {
             const monthOrder = ["JANUARI", "FEBRUARI", "MARET", "APRIL", "MEI", "JUNI", "JULI", "AGUSTUS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DESEMBER"];
             
-            const sortedMonths = Object.keys(monthMap).sort((a, b) => {
-                let indexA = monthOrder.indexOf(a);
-                let indexB = monthOrder.indexOf(b);
-                return (indexA === -1 ? 99 : indexA) - (indexB === -1 ? 99 : indexB);
-            });
-
-            const monthValues = sortedMonths.map(m => monthMap[m]);
-
-            const ctxMonth = document.getElementById('monthBarChart').getContext('2d');
-            if (monthBarChartInstance) monthBarChartInstance.destroy();
-
-            monthBarChartInstance = new Chart(ctxMonth, {
-                type: 'bar',
-                data: {
-                    labels: sortedMonths,
-                    datasets: [{
-                        label: 'Nilai BC (Rp)',
-                        data: monthValues,
-                        backgroundColor: '#0ea5e9',
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } }
-                }
-            });
-
-            const witelLabels = Object.keys(witelMap);
-            const witelValues = Object.values(witelMap);
-
-            const ctxBar = document.getElementById('witelBarChart').getContext('2d');
-            if (barChartInstance) barChartInstance.destroy();
-
-            barChartInstance = new Chart(ctxBar, {
-                type: 'bar',
-                data: {
-                    labels: witelLabels,
-                    datasets: [{
-                        label: 'Nilai BC (Rp)',
-                        data: witelValues,
-                        backgroundColor: '#2563eb',
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } }
-                }
-            });
-
-            const docLabels = Object.keys(docStatusCounts);
-            const docValues = Object.values(docStatusCounts);
-
-            const colorPalette = [
-                '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', 
-                '#ec4899', '#06b6d4', '#64748b', '#ef4444'
-            ];
-
-            const ctxDoughnut = document.getElementById('progressDoughnutChart').getContext('2d');
-            if (doughnutChartInstance) doughnutChartInstance.destroy();
-
-            doughnutChartInstance = new Chart(ctxDoughnut, {
-                type: 'doughnut',
-                data: {
-                    labels: docLabels,
-                    datasets: [{
-                        data: docValues,
-                        backgroundColor: colorPalette.slice(0, docLabels.length),
-                        borderWidth: 1.5,
-                        borderColor: '#ffffff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { 
-                            position: 'bottom', 
-                            labels: { 
-                                boxWidth: 8, 
-                                font: { size: 9 },
-                                generateLabels: function(chart) {
-                                    const data = chart.data;
-                                    if (data.labels.length && data.datasets.length) {
-                                        return data.labels.map((label, i) => {
-                                            const val = data.datasets[0].data[i];
-                                            return {
-                                                text: `${label}: ${val}`,
-                                                fillStyle: data.datasets[0].backgroundColor[i],
-                                                strokeStyle: '#fff',
-                                                lineWidth: 1,
-                                                hidden: false,
-                                                index: i
-                                            };
-                                        });
-                                    }
-                                    return [];
-                                }
-                            } 
-                        },
-                        tooltip: {
-                            callbacks: {
-                                title: function() {
-                                    return '';
-                                },
-                                label: function(context) {
-                                    return ` ${context.label}: ${context.raw} Project`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-    </script>
-</body>
-</html>
+            const sortedMonths = Object.keys
