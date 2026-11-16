@@ -81,7 +81,7 @@
                         <span>Overview Dashboard</span>
                     </a>
                     
-                    <!-- Menu BAST Termin (Navigasi View) -->
+                    <!-- Menu BAST Termin -->
                     <a href="#" id="navTermin" onclick="switchView('TERMIN', event)" class="flex items-center space-x-2.5 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 text-xs font-semibold transition-all">
                         <i class="fa-solid fa-file-signature w-4 text-center"></i>
                         <span>Monitoring BAST Termin</span>
@@ -136,7 +136,7 @@
                         </div>
                     </div>
 
-                    <!-- Filter Termin (Pindahan Kotak Merah) -->
+                    <!-- Filter Termin -->
                     <div class="space-y-1.5" id="terminFilterContainer">
                         <label class="text-[11px] font-semibold text-slate-600 flex items-center px-1">
                             <i class="fa-solid fa-layer-group mr-1.5 text-slate-400 text-xs"></i> Filter Termin
@@ -336,20 +336,20 @@
                     </div>
                 </div>
 
-                <!-- Section Tambahan: Progress Project per Witel -->
+                <!-- Section Tambahan: Progress Project per Witel (Dengan Tombol Show/Hide) -->
                 <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
                     <div class="flex items-center justify-between mb-3">
-                        <h2 class="text-xs font-bold text-slate-800"><i class="fa-solid fa-chart-column mr-1.5 text-blue-600"></i>Progress Project per Witel (MTD)</h2>
+                        <h2 class="text-xs font-bold text-slate-800"><i class="fa-solid fa-chart-column mr-1.5 text-blue-600"></i>Progress Project per Witel</h2>
                         <span class="text-[10px] bg-blue-100 text-blue-800 px-2.5 py-0.5 rounded-full font-semibold" id="mtdLabel">Semua Bulan (YTD)</span>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-xs">
                             <thead>
                                 <tr class="border-b border-slate-200 text-slate-400 font-bold uppercase text-[10px]">
-                                    <th class="pb-2">Witel / Nama Pelanggan (Kolom C & F)</th>
-                                    <th class="pb-2 text-center">Mitra OBL (Kolom H)</th>
-                                    <th class="pb-2 text-center">Project Close / Total Project (TOMPS Close)</th>
-                                    <th class="pb-2 text-right">Progress MTD (%)</th>
+                                    <th class="pb-2">Witel / Nama Pelanggan</th>
+                                    <th class="pb-2 text-center">Mitra OBL</th>
+                                    <th class="pb-2 text-center">Project Close / Total Project</th>
+                                    <th class="pb-2 text-right">Progress (%)</th>
                                 </tr>
                             </thead>
                             <tbody id="witelMtdTableBody" class="divide-y divide-slate-100 text-slate-700 font-medium">
@@ -445,6 +445,8 @@
         let isDropdownPopulated = false;
 
         let currentView = "OVERVIEW";
+        // Menyimpan state witel mana saja yang sedang di-show (default tertutup / false)
+        let witelToggleState = {};
 
         window.addEventListener("DOMContentLoaded", () => {
             const isLogged = sessionStorage.getItem("isDashboardLoggedIn");
@@ -500,7 +502,7 @@
 
                 overviewSection.classList.remove("hidden");
                 terminSection.classList.add("hidden");
-                terminFilterContainer.classList.add("hidden"); // Sembunyikan filter termin di overview
+                terminFilterContainer.classList.add("hidden");
             } else if (viewMode === "TERMIN") {
                 navTermin.classList.add("bg-indigo-950", "text-white", "shadow-xs");
                 navTermin.classList.remove("text-slate-600", "hover:bg-slate-50");
@@ -510,10 +512,82 @@
 
                 overviewSection.classList.add("hidden");
                 terminSection.classList.remove("hidden");
-                terminFilterContainer.classList.remove("hidden"); // Tampilkan filter termin di sidebar
+                terminFilterContainer.classList.remove("hidden");
             }
 
             filterAndRenderDashboard();
+        }
+
+        function toggleWitelRows(witelName) {
+            witelToggleState[witelName] = !witelToggleState[witelName];
+            renderWitelMtdTableCached();
+        }
+
+        let lastWitelMtdMap = {};
+        let lastSelectedMonth = "ALL";
+
+        function renderWitelMtdTable(witelMtdMap, selectedMonth) {
+            lastWitelMtdMap = witelMtdMap;
+            lastSelectedMonth = selectedMonth;
+            renderWitelMtdTableCached();
+        }
+
+        function renderWitelMtdTableCached() {
+            let tbodyHtml = "";
+            Object.keys(lastWitelMtdMap).sort().forEach(witel => {
+                let stats = lastWitelMtdMap[witel];
+                let witelPct = stats.total > 0 ? Math.round((stats.close / stats.total) * 100) : 0;
+                let isExpanded = !!witelToggleState[witel];
+
+                tbodyHtml += `
+                    <tr class="bg-slate-50 font-bold text-slate-800">
+                        <td class="py-2.5 px-2.5">
+                            <div class="flex items-center space-x-2">
+                                <button onclick="toggleWitelRows('${witel}')" class="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-semibold px-2 py-0.5 rounded shadow-xs transition-all cursor-pointer inline-flex items-center space-x-1">
+                                    <i class="fa-solid ${isExpanded ? 'fa-eye-slash' : 'fa-eye'} text-[9px]"></i>
+                                    <span>${isExpanded ? 'Hide' : 'Show'}</span>
+                                </button>
+                                <span>${witel}</span>
+                            </div>
+                        </td>
+                        <td class="py-2.5 text-center text-slate-400">-</td>
+                        <td class="py-2.5 text-center"><span class="text-emerald-600">${stats.close}</span> / ${stats.total} Project</td>
+                        <td class="py-2.5 text-right pr-2.5">
+                            <span class="text-blue-600">${witelPct}%</span>
+                        </td>
+                    </tr>
+                `;
+
+                if (isExpanded) {
+                    stats.customers.forEach(cust => {
+                        tbodyHtml += `
+                            <tr class="hover:bg-slate-50/70 transition-colors bg-white">
+                                <td class="py-1.5 pl-9 pr-2.5 text-slate-600 font-normal flex items-center space-x-1.5">
+                                    <span class="text-slate-400">-</span>
+                                    <span class="truncate">${cust.name}</span>
+                                </td>
+                                <td class="py-1.5 text-center text-slate-600 font-medium">${cust.mitra}</td>
+                                <td class="py-1.5 text-center text-slate-400">-</td>
+                                <td class="py-1.5 text-right pr-2.5">
+                                    <div class="flex items-center justify-end space-x-2">
+                                        <span class="font-semibold text-slate-700 w-8 text-right text-[11px]">${cust.pct}%</span>
+                                        <div class="w-20 bg-slate-100 rounded-full h-1.5 overflow-hidden hidden sm:block">
+                                            <div class="bg-blue-500 h-1.5 rounded-full" style="width: ${cust.pct}%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+            });
+
+            if (Object.keys(lastWitelMtdMap).length === 0) {
+                tbodyHtml = `<tr><td colspan="4" class="py-4 text-center text-slate-400">Tidak ada data untuk periode ini</td></tr>`;
+            }
+
+            document.getElementById("witelMtdTableBody").innerHTML = tbodyHtml;
+            document.getElementById("mtdLabel").innerText = lastSelectedMonth === "ALL" ? "Semua Bulan (YTD)" : lastSelectedMonth.replace(/^\d+_/, '');
         }
 
         function resetAllFilters(event) {
@@ -902,53 +976,6 @@
             });
 
             tbody.innerHTML = rowsHtml;
-        }
-
-        function renderWitelMtdTable(witelMtdMap, selectedMonth) {
-            let tbodyHtml = "";
-            Object.keys(witelMtdMap).sort().forEach(witel => {
-                let stats = witelMtdMap[witel];
-                let witelPct = stats.total > 0 ? Math.round((stats.close / stats.total) * 100) : 0;
-
-                tbodyHtml += `
-                    <tr class="bg-slate-50 font-bold text-slate-800">
-                        <td class="py-2 px-2.5">${witel}</td>
-                        <td class="py-2 text-center text-slate-400">-</td>
-                        <td class="py-2 text-center"><span class="text-emerald-600">${stats.close}</span> / ${stats.total} Project</td>
-                        <td class="py-2 text-right pr-2.5">
-                            <span class="text-blue-600">${witelPct}%</span>
-                        </td>
-                    </tr>
-                `;
-
-                stats.customers.forEach(cust => {
-                    tbodyHtml += `
-                        <tr class="hover:bg-slate-50/70 transition-colors">
-                            <td class="py-1.5 pl-6 pr-2.5 text-slate-600 font-normal flex items-center space-x-1.5">
-                                <span class="text-slate-400">-</span>
-                                <span class="truncate">${cust.name}</span>
-                            </td>
-                            <td class="py-1.5 text-center text-slate-600 font-medium">${cust.mitra}</td>
-                            <td class="py-1.5 text-center text-slate-400">-</td>
-                            <td class="py-1.5 text-right pr-2.5">
-                                <div class="flex items-center justify-end space-x-2">
-                                    <span class="font-semibold text-slate-700 w-8 text-right text-[11px]">${cust.pct}%</span>
-                                    <div class="w-20 bg-slate-100 rounded-full h-1.5 overflow-hidden hidden sm:block">
-                                        <div class="bg-blue-500 h-1.5 rounded-full" style="width: ${cust.pct}%"></div>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                });
-            });
-
-            if (Object.keys(witelMtdMap).length === 0) {
-                tbodyHtml = `<tr><td colspan="4" class="py-4 text-center text-slate-400">Tidak ada data untuk periode ini</td></tr>`;
-            }
-
-            document.getElementById("witelMtdTableBody").innerHTML = tbodyHtml;
-            document.getElementById("mtdLabel").innerText = selectedMonth === "ALL" ? "Semua Bulan (YTD)" : selectedMonth.replace(/^\d+_/, '');
         }
 
         function renderCharts(monthMap, witelMap, docStatusCounts) {
