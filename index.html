@@ -15,7 +15,7 @@
         body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col p-2 sm:p-4">
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
 
     <!-- MODAL / HALAMAN LOGIN -->
     <div id="loginModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs px-4">
@@ -56,232 +56,295 @@
         </div>
     </div>
 
-    <!-- Container Utama Tampilan Card Dashboard -->
-    <div id="dashboardContainer" class="max-w-7xl mx-auto w-full bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 space-y-4 hidden">
+    <!-- CONTAINER UTAMA SETELAH LOGIN (Layout Sidebar Kiri & Konten Kanan) -->
+    <div id="dashboardContainer" class="flex min-h-screen w-full hidden">
         
-        <!-- Header Navbar / Top Controls -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 pb-2 border-b border-slate-100">
-            <!-- Title & Source -->
-            <div class="flex items-center space-x-2.5">
-                <div class="bg-blue-600 text-white p-2 rounded-lg shadow-md flex items-center justify-center w-9 h-9">
-                    <i class="fa-solid fa-chart-pie text-lg"></i>
+        <!-- SIDEBAR KIRI -->
+        <aside class="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0">
+            <!-- Logo / Brand Header -->
+            <div class="p-4 border-b border-slate-100 flex items-center space-x-3">
+                <div class="bg-blue-600 text-white p-2 rounded-lg shadow-sm flex items-center justify-center w-8 h-8">
+                    <i class="fa-solid fa-chart-pie text-sm"></i>
                 </div>
                 <div>
-                    <h1 class="text-lg font-bold text-slate-900 tracking-tight leading-tight">Dashboard Pengawalan Project Government</h1>
-                    <p class="text-[11px] font-medium text-slate-400">Source: Google Sheets (Gsheet irwan)</p>
+                    <h2 class="text-xs font-bold text-slate-900 tracking-tight">GALAKSI REPORT</h2>
+                    <p class="text-[10px] text-slate-400">Telkom Indonesia</p>
                 </div>
             </div>
 
-            <!-- Controls (Dropdown Filter Witel, Dropdown Filter MTD, Posisi Update Badge, & Tombol Logout) -->
-            <div class="flex flex-wrap items-center gap-2">
-                <!-- Dropdown Filter Witel (Baru) -->
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none text-slate-500">
-                        <i class="fa-solid fa-building text-xs"></i>
-                    </div>
-                    <select id="witelFilter" onchange="filterAndRenderDashboard()" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg pl-8 pr-7 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer">
-                        <option value="ALL" selected>🏢 Semua Witel</option>
-                    </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-slate-400">
+            <!-- Menu Navigasi Samping -->
+            <div class="p-3 space-y-1 text-xs font-medium text-slate-600 flex-1">
+                <a href="#" class="flex items-center space-x-2.5 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors">
+                    <i class="fa-solid fa-house text-slate-400 w-4"></i>
+                    <span>Overview</span>
+                </a>
+                
+                <div class="pt-2 pb-1">
+                    <div class="flex items-center justify-between px-3 py-2 rounded-lg bg-blue-50/80 text-blue-700 font-semibold">
+                        <div class="flex items-center space-x-2.5">
+                            <i class="fa-solid fa-chart-line text-blue-600 w-4"></i>
+                            <span>Reports</span>
+                        </div>
                         <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                    </div>
+                    <!-- Submenu -->
+                    <div class="pl-7 pr-2 py-1.5 space-y-1">
+                        <div class="text-[10px] font-bold uppercase text-slate-400 pt-1 pb-0.5">Aosodomoro</div>
+                        <a href="#" class="block px-2.5 py-1.5 rounded-md bg-slate-900 text-white font-semibold text-[11px] shadow-xs">GALAKSI</a>
                     </div>
                 </div>
 
-                <!-- Dropdown Filter MTD -->
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none text-slate-500">
-                        <i class="fa-regular fa-calendar-days text-xs"></i>
+                <a href="#" class="flex items-center space-x-2.5 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors">
+                    <i class="fa-solid fa-hand-pointer text-slate-400 w-4"></i>
+                    <span>Action Based</span>
+                </a>
+
+                <a href="#" class="flex items-center space-x-2.5 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors">
+                    <i class="fa-solid fa-users-gear text-slate-400 w-4"></i>
+                    <span>Admin Panel</span>
+                </a>
+
+                <a href="#" class="flex items-center space-x-2.5 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors">
+                    <i class="fa-solid fa-gear text-slate-400 w-4"></i>
+                    <span>Settings</span>
+                </a>
+            </div>
+
+            <!-- Footer Sidebar / Info User -->
+            <div class="p-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                <div class="flex items-center space-x-2 overflow-hidden">
+                    <div class="bg-slate-200 text-slate-700 rounded-full w-7 h-7 flex items-center justify-center font-bold text-[10px]">
+                        IE
                     </div>
-                    <select id="monthFilter" onchange="filterAndRenderDashboard()" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg pl-8 pr-7 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer">
-                        <option value="ALL" selected>🔍 Tampilkan Semua (YTD)</option>
-                        <option value="01_JANUARI">Januari</option>
-                        <option value="02_FEBRUARI">Februari</option>
-                        <option value="03_MARET">Maret</option>
-                        <option value="04_APRIL">April</option>
-                        <option value="05_MEI">Mei</option>
-                        <option value="06_JUNI">Juni</option>
-                        <option value="07_JULI">Juli</option>
-                        <option value="08_AGUSTUS">Agustus</option>
-                        <option value="09_SEPTEMBER">September</option>
-                        <option value="10_OKTOBER">Oktober</option>
-                        <option value="11_NOVEMBER">November</option>
-                    </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-slate-400">
-                        <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                    <div class="truncate">
+                        <p class="text-[11px] font-bold text-slate-800 truncate">Irwan Sagala</p>
+                        <p class="text-[9px] text-slate-400 truncate">Project Delivery</p>
+                    </div>
+                </div>
+                <button onclick="handleLogout()" title="Keluar Sesi" class="text-slate-400 hover:text-red-600 p-1.5 rounded-md hover:bg-red-50 transition-colors cursor-pointer">
+                    <i class="fa-solid fa-right-from-bracket text-xs"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- KONTEN UTAMA SEBELAH KANAN -->
+        <main class="flex-1 flex flex-col p-4 sm:p-6 overflow-y-auto space-y-4">
+            
+            <!-- Top Bar / Header Konten Kanan -->
+            <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <!-- Title & Filter -->
+                <div class="flex flex-wrap items-center gap-3">
+                    <div>
+                        <h1 class="text-base font-bold text-slate-900 tracking-tight">Reports | GALAKSI</h1>
+                        <p class="text-[11px] text-slate-400">Source: Google Sheets (Gsheet irwan)</p>
+                    </div>
+
+                    <div class="hidden xl:block h-6 w-px bg-slate-200 mx-1"></div>
+
+                    <!-- Filter Witel -->
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none text-slate-500">
+                            <i class="fa-solid fa-building text-xs"></i>
+                        </div>
+                        <select id="witelFilter" onchange="filterAndRenderDashboard()" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg pl-8 pr-7 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer">
+                            <option value="ALL" selected>🏢 Semua Witel</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-slate-400">
+                            <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                        </div>
+                    </div>
+
+                    <!-- Filter Bulan MTD -->
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none text-slate-500">
+                            <i class="fa-regular fa-calendar-days text-xs"></i>
+                        </div>
+                        <select id="monthFilter" onchange="filterAndRenderDashboard()" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg pl-8 pr-7 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer">
+                            <option value="ALL" selected>🔍 Tampilkan Semua (YTD)</option>
+                            <option value="01_JANUARI">Januari</option>
+                            <option value="02_FEBRUARI">Februari</option>
+                            <option value="03_MARET">Maret</option>
+                            <option value="04_APRIL">April</option>
+                            <option value="05_MEI">Mei</option>
+                            <option value="06_JUNI">Juni</option>
+                            <option value="07_JULI">Juli</option>
+                            <option value="08_AGUSTUS">Agustus</option>
+                            <option value="09_SEPTEMBER">September</option>
+                            <option value="10_OKTOBER">Oktober</option>
+                            <option value="11_NOVEMBER">November</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-slate-400">
+                            <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Posisi Update Badge -->
-                <div class="flex items-center text-xs bg-emerald-50 text-emerald-700 font-semibold px-3 py-1.5 rounded-lg border border-emerald-200/60">
+                <div class="flex items-center text-xs bg-emerald-50 text-emerald-700 font-semibold px-3 py-1.5 rounded-lg border border-emerald-200/60 self-start md:self-auto">
                     <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full inline-block mr-1.5 animate-pulse"></span>
                     <span id="autoUpdateDate">Posisi: Loading...</span>
                 </div>
-
-                <!-- Tombol Logout -->
-                <button onclick="handleLogout()" title="Keluar Sesi" class="bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-slate-200 transition-all cursor-pointer">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- 4 Key Metric Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            
-            <!-- Card 1: Total Project -->
-            <div class="bg-white p-3.5 rounded-xl border border-slate-200/70 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
-                <div class="flex items-start justify-between">
-                    <div>
-                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">TOTAL PROJECT</p>
-                        <h3 class="text-2xl font-extrabold text-slate-900 mt-1" id="valTotalProject">0</h3>
-                    </div>
-                    <div class="bg-blue-50 text-blue-600 p-2 rounded-lg">
-                        <i class="fa-solid fa-folder text-base"></i>
-                    </div>
-                </div>
-                <div class="mt-2 pt-1.5 border-t border-slate-50">
-                    <p class="text-[11px] font-semibold text-emerald-600 flex items-center">
-                        <i class="fa-solid fa-arrow-up mr-1 text-[9px]"></i> <span id="valTargetTercapai">100% Target Tercapai</span>
-                    </p>
-                </div>
             </div>
 
-            <!-- Card 2: Total Nilai BC (RP) + Status Order -->
-            <div class="bg-white p-3.5 rounded-xl border border-slate-200/70 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
-                <div class="flex items-start justify-between">
-                    <div>
-                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">TOTAL NILAI BC (RP)</p>
-                        <h3 class="text-xl font-extrabold text-slate-900 mt-1" id="valNilaiBC">0</h3>
-                    </div>
-                    <div class="bg-indigo-50 text-indigo-600 p-2 rounded-lg">
-                        <i class="fa-solid fa-wallet text-base"></i>
-                    </div>
-                </div>
-                <div class="mt-2 pt-1 border-t border-slate-50 space-y-0.5">
-                    <p class="text-[11px] font-medium text-slate-500">
-                        Nilai OBL: <span class="font-bold text-slate-700" id="valNilaiOBL">0</span>
-                    </p>
-                    <p class="text-[11px] font-medium text-slate-500">
-                        Provcomp: <span class="font-bold text-slate-700" id="valProvcompRatio">0 / 0</span>
-                    </p>
-                    <p class="text-[11px] font-medium text-slate-500">
-                        Billcomp: <span class="font-bold text-slate-700" id="valBillcompRatio">0 / 0</span>
-                    </p>
-                </div>
-            </div>
-
-            <!-- Card 3: Project Close -->
-            <div class="bg-white p-3.5 rounded-xl border border-slate-200/70 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
-                <div class="flex items-start justify-between">
-                    <div>
-                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">PROJECT CLOSE</p>
-                        <div class="flex items-baseline space-x-1 mt-1">
-                            <h3 class="text-2xl font-extrabold text-emerald-600" id="valProjectClose">0</h3>
-                            <span class="text-[11px] font-semibold text-slate-400">Project</span>
-                        </div>
-                    </div>
-                    <div class="bg-emerald-50 text-emerald-600 p-2 rounded-lg">
-                        <i class="fa-solid fa-circle-check text-base"></i>
-                    </div>
-                </div>
-                <div class="mt-2 pt-1.5 border-t border-slate-50">
-                    <p class="text-[11px] font-medium text-slate-500">
-                        Nilai Close: <span class="font-bold text-slate-700" id="valNilaiClose">0</span>
-                    </p>
-                </div>
-            </div>
-
-            <!-- Card 4: Progress Keseluruhan -->
-            <div class="bg-white p-3.5 rounded-xl border border-slate-200/70 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
-                <div class="flex items-start justify-between">
-                    <div>
-                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">PROGRESS KESELURUHAN</p>
-                        <h3 class="text-2xl font-extrabold text-blue-600 mt-1" id="valProgressPersen">0%</h3>
-                    </div>
-                    <div class="bg-cyan-50 text-cyan-600 p-2 rounded-lg">
-                        <i class="fa-solid fa-chart-line text-base"></i>
-                    </div>
-                </div>
+            <!-- 4 Key Metric Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 
-                <div class="mt-2 pt-1 border-t border-slate-50 space-y-1">
-                    <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                        <div id="progressBarFill" class="bg-blue-600 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
-                    </div>
-
-                    <div class="pt-0.5">
-                        <div class="flex items-center justify-between text-[11px] font-medium text-slate-500">
-                            <span class="truncate pr-1">Doc Delivery:</span>
-                            <select id="docDeliveryFilter" onchange="filterAndRenderDashboard()" class="bg-slate-50 border border-slate-200 text-slate-700 text-[10px] font-semibold rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                <option value="ALL">Semua Opsi</option>
-                            </select>
+                <!-- Card 1: Total Project -->
+                <div class="bg-white p-3.5 rounded-xl border border-slate-200/70 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">TOTAL PROJECT</p>
+                            <h3 class="text-2xl font-extrabold text-slate-900 mt-1" id="valTotalProject">0</h3>
                         </div>
-                        <p class="text-[11px] font-medium text-slate-500 text-right">
-                            Rasio: <span class="font-bold text-slate-700" id="valDocDeliveryRatio">0 / 0</span>
+                        <div class="bg-blue-50 text-blue-600 p-2 rounded-lg">
+                            <i class="fa-solid fa-folder text-base"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2 pt-1.5 border-t border-slate-50">
+                        <p class="text-[11px] font-semibold text-emerald-600 flex items-center">
+                            <i class="fa-solid fa-arrow-up mr-1 text-[9px]"></i> <span id="valTargetTercapai">100% Target Tercapai</span>
                         </p>
                     </div>
                 </div>
+
+                <!-- Card 2: Total Nilai BC (RP) + Status Order -->
+                <div class="bg-white p-3.5 rounded-xl border border-slate-200/70 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">TOTAL NILAI BC (RP)</p>
+                            <h3 class="text-xl font-extrabold text-slate-900 mt-1" id="valNilaiBC">0</h3>
+                        </div>
+                        <div class="bg-indigo-50 text-indigo-600 p-2 rounded-lg">
+                            <i class="fa-solid fa-wallet text-base"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2 pt-1 border-t border-slate-50 space-y-0.5">
+                        <p class="text-[11px] font-medium text-slate-500">
+                            Nilai OBL: <span class="font-bold text-slate-700" id="valNilaiOBL">0</span>
+                        </p>
+                        <p class="text-[11px] font-medium text-slate-500">
+                            Provcomp: <span class="font-bold text-slate-700" id="valProvcompRatio">0 / 0</span>
+                        </p>
+                        <p class="text-[11px] font-medium text-slate-500">
+                            Billcomp: <span class="font-bold text-slate-700" id="valBillcompRatio">0 / 0</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card 3: Project Close -->
+                <div class="bg-white p-3.5 rounded-xl border border-slate-200/70 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">PROJECT CLOSE</p>
+                            <div class="flex items-baseline space-x-1 mt-1">
+                                <h3 class="text-2xl font-extrabold text-emerald-600" id="valProjectClose">0</h3>
+                                <span class="text-[11px] font-semibold text-slate-400">Project</span>
+                            </div>
+                        </div>
+                        <div class="bg-emerald-50 text-emerald-600 p-2 rounded-lg">
+                            <i class="fa-solid fa-circle-check text-base"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2 pt-1.5 border-t border-slate-50">
+                        <p class="text-[11px] font-medium text-slate-500">
+                            Nilai Close: <span class="font-bold text-slate-700" id="valNilaiClose">0</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card 4: Progress Keseluruhan -->
+                <div class="bg-white p-3.5 rounded-xl border border-slate-200/70 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">PROGRESS KESELURUHAN</p>
+                            <h3 class="text-2xl font-extrabold text-blue-600 mt-1" id="valProgressPersen">0%</h3>
+                        </div>
+                        <div class="bg-cyan-50 text-cyan-600 p-2 rounded-lg">
+                            <i class="fa-solid fa-chart-line text-base"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-2 pt-1 border-t border-slate-50 space-y-1">
+                        <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                            <div id="progressBarFill" class="bg-blue-600 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+
+                        <div class="pt-0.5">
+                            <div class="flex items-center justify-between text-[11px] font-medium text-slate-500">
+                                <span class="truncate pr-1">Doc Delivery:</span>
+                                <select id="docDeliveryFilter" onchange="filterAndRenderDashboard()" class="bg-slate-50 border border-slate-200 text-slate-700 text-[10px] font-semibold rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                    <option value="ALL">Semua Opsi</option>
+                                </select>
+                            </div>
+                            <p class="text-[11px] font-medium text-slate-500 text-right">
+                                Rasio: <span class="font-bold text-slate-700" id="valDocDeliveryRatio">0 / 0</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
-        </div>
+            <!-- Section Grafik & Visualisasi -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                <!-- Bar Chart: Distribusi Nilai BC per Bulan -->
+                <div class="bg-white p-3.5 rounded-xl border border-slate-200/60 shadow-xs">
+                    <div class="flex items-center justify-between mb-2">
+                        <h2 class="text-xs font-bold text-slate-800">Distribusi Nilai BC per Bulan</h2>
+                        <span class="text-[10px] bg-slate-100 border border-slate-200 text-slate-500 px-2 py-0.5 rounded font-medium">YTD</span>
+                    </div>
+                    <div class="relative h-48">
+                        <canvas id="monthBarChart"></canvas>
+                    </div>
+                </div>
 
-        <!-- Section Grafik & Visualisasi -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
-            <!-- Bar Chart: Distribusi Nilai BC per Bulan -->
-            <div class="bg-slate-50/50 p-3.5 rounded-xl border border-slate-200/60">
+                <!-- Bar Chart: Distribusi Nilai BC per Witel -->
+                <div class="bg-white p-3.5 rounded-xl border border-slate-200/60 shadow-xs">
+                    <div class="flex items-center justify-between mb-2">
+                        <h2 class="text-xs font-bold text-slate-800">Distribusi Nilai BC per Witel</h2>
+                        <span class="text-[10px] bg-slate-100 border border-slate-200 text-slate-500 px-2 py-0.5 rounded font-medium">Real-time Gsheet</span>
+                    </div>
+                    <div class="relative h-48">
+                        <canvas id="witelBarChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Doughnut Chart: Status Penyelesaian -->
+                <div class="bg-white p-3.5 rounded-xl border border-slate-200/60 shadow-xs">
+                    <div class="flex items-center justify-between mb-2">
+                        <h2 class="text-xs font-bold text-slate-800">Status Penyelesaian</h2>
+                        <span class="text-[10px] bg-emerald-100/60 text-emerald-800 px-2 py-0.5 rounded font-medium">Overview</span>
+                    </div>
+                    <div class="relative h-48 flex items-center justify-center">
+                        <canvas id="progressDoughnutChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Tambahan: Progress Project per Witel -->
+            <div class="bg-white p-3.5 rounded-xl border border-slate-200/60 shadow-xs">
                 <div class="flex items-center justify-between mb-2">
-                    <h2 class="text-xs font-bold text-slate-800">Distribusi Nilai BC per Bulan</h2>
-                    <span class="text-[10px] bg-white border border-slate-200 text-slate-500 px-2 py-0.5 rounded font-medium">YTD</span>
+                    <h2 class="text-xs font-bold text-slate-800"><i class="fa-solid fa-chart-column mr-1.5 text-blue-600"></i>Progress Project per Witel (MTD)</h2>
+                    <span class="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-medium" id="mtdLabel">Semua Bulan (YTD)</span>
                 </div>
-                <div class="relative h-48">
-                    <canvas id="monthBarChart"></canvas>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="border-b border-slate-200 text-slate-400 font-bold uppercase text-[10px]">
+                                <th class="pb-1.5">Witel / Nama Pelanggan (Kolom C & F)</th>
+                                <th class="pb-1.5 text-center">Mitra OBL (Kolom H)</th>
+                                <th class="pb-1.5 text-center">Project Close / Total Project (TOMPS Close)</th>
+                                <th class="pb-1.5 text-right">Progress MTD (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="witelMtdTableBody" class="divide-y divide-slate-100 text-slate-700 font-medium">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            <!-- Bar Chart: Distribusi Nilai BC per Witel -->
-            <div class="bg-slate-50/50 p-3.5 rounded-xl border border-slate-200/60">
-                <div class="flex items-center justify-between mb-2">
-                    <h2 class="text-xs font-bold text-slate-800">Distribusi Nilai BC per Witel</h2>
-                    <span class="text-[10px] bg-white border border-slate-200 text-slate-500 px-2 py-0.5 rounded font-medium">Real-time Gsheet</span>
-                </div>
-                <div class="relative h-48">
-                    <canvas id="witelBarChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Doughnut Chart: Status Penyelesaian -->
-            <div class="bg-slate-50/50 p-3.5 rounded-xl border border-slate-200/60">
-                <div class="flex items-center justify-between mb-2">
-                    <h2 class="text-xs font-bold text-slate-800">Status Penyelesaian</h2>
-                    <span class="text-[10px] bg-emerald-100/60 text-emerald-800 px-2 py-0.5 rounded font-medium">Overview</span>
-                </div>
-                <div class="relative h-48 flex items-center justify-center">
-                    <canvas id="progressDoughnutChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Section Tambahan: Progress Project per Witel -->
-        <div class="bg-slate-50/50 p-3.5 rounded-xl border border-slate-200/60">
-            <div class="flex items-center justify-between mb-2">
-                <h2 class="text-xs font-bold text-slate-800"><i class="fa-solid fa-chart-column mr-1.5 text-blue-600"></i>Progress Project per Witel (MTD)</h2>
-                <span class="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-medium" id="mtdLabel">Semua Bulan (YTD)</span>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                    <thead>
-                        <tr class="border-b border-slate-200 text-slate-400 font-bold uppercase text-[10px]">
-                            <th class="pb-1.5">Witel / Nama Pelanggan (Kolom C & F)</th>
-                            <th class="pb-1.5 text-center">Mitra OBL (Kolom H)</th>
-                            <th class="pb-1.5 text-center">Project Close / Total Project (TOMPS Close)</th>
-                            <th class="pb-1.5 text-right">Progress MTD (%)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="witelMtdTableBody" class="divide-y divide-slate-100 text-slate-700 font-medium">
-                        <!-- Populated via JS -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
+        </main>
     </div>
 
     <!-- Script JavaScript -->
@@ -362,11 +425,9 @@
         function populateDropdowns(data) {
             if (isDropdownPopulated) return;
 
-            // Populate Witel Dropdown
             const witelSelectEl = document.getElementById("witelFilter");
             let witelSet = new Set();
 
-            // Populate Doc Delivery Dropdown
             const docSelectEl = document.getElementById("docDeliveryFilter");
             let docSet = new Set();
 
@@ -380,7 +441,6 @@
                 }
             });
 
-            // Append Witel options
             Array.from(witelSet).sort().forEach(w => {
                 let opt = document.createElement("option");
                 opt.value = w;
@@ -388,7 +448,6 @@
                 witelSelectEl.appendChild(opt);
             });
 
-            // Append Doc Delivery options
             docSelectEl.innerHTML = '<option value="ALL">Semua Opsi</option>';
             Array.from(docSet).sort().forEach(opt => {
                 let optEl = document.createElement("option");
@@ -447,12 +506,10 @@
 
                 if (!progresOBL || progresOBL === "-") return;
 
-                // Filter Witel
                 if (selectedWitel !== "ALL" && witel !== selectedWitel) {
                     return;
                 }
 
-                // Filter Bulan MTD
                 if (selectedMonth !== "ALL" && !targetBulan.includes(selectedMonth)) {
                     return;
                 }
@@ -476,11 +533,19 @@
 
                 let docDeliveryVal = (item["Progress Dokumen Delivery"] || item["PROGRESS DOKUMEN DELIVERY"] || getValByKeyword(item, "Progress Dokumen Delivery")).toString().trim();
                 
-                if (docDeliveryVal && docDeliveryVal !== "" && docDeliveryVal !== "-") {
-                    docStatusCounts[docDeliveryVal] = (docStatusCounts[docDeliveryVal] || 0) + 1;
-                } else {
-                    docStatusCounts["00 Not Ready"] = (docStatusCounts["00 Not Ready"] || 0) + 1;
+                let normalizedDocStatus = docDeliveryVal;
+                let lowerDoc = docDeliveryVal.toLowerCase();
+                if (lowerDoc.includes("02 collect evidence")) {
+                    normalizedDocStatus = "02 Collect Evidence";
+                } else if (lowerDoc.includes("01 delivery")) {
+                    normalizedDocStatus = "01 Delivery";
+                } else if (lowerDoc.includes("07 finish") || lowerDoc.includes("07 finished")) {
+                    normalizedDocStatus = "07 Finish";
+                } else if (!docDeliveryVal || docDeliveryVal === "-") {
+                    normalizedDocStatus = "00 Not Ready";
                 }
+
+                docStatusCounts[normalizedDocStatus] = (docStatusCounts[normalizedDocStatus] || 0) + 1;
 
                 if (selectedDocDelivery === "ALL") {
                     if (docDeliveryVal && docDeliveryVal !== "" && docDeliveryVal !== "-") totalDocDeliveryMatch++;
@@ -642,66 +707,4 @@
             const docValues = Object.values(docStatusCounts);
 
             const colorPalette = [
-                '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', 
-                '#ec4899', '#06b6d4', '#64748b', '#ef4444'
-            ];
-
-            const ctxDoughnut = document.getElementById('progressDoughnutChart').getContext('2d');
-            if (doughnutChartInstance) doughnutChartInstance.destroy();
-
-            doughnutChartInstance = new Chart(ctxDoughnut, {
-                type: 'doughnut',
-                data: {
-                    labels: docLabels,
-                    datasets: [{
-                        data: docValues,
-                        backgroundColor: colorPalette.slice(0, docLabels.length),
-                        borderWidth: 1.5,
-                        borderColor: '#ffffff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { 
-                            position: 'bottom', 
-                            labels: { 
-                                boxWidth: 8, 
-                                font: { size: 9 },
-                                generateLabels: function(chart) {
-                                    const data = chart.data;
-                                    if (data.labels.length && data.datasets.length) {
-                                        return data.labels.map((label, i) => {
-                                            const val = data.datasets[0].data[i];
-                                            return {
-                                                text: `${label}: ${val}`,
-                                                fillStyle: data.datasets[0].backgroundColor[i],
-                                                strokeStyle: '#fff',
-                                                lineWidth: 1,
-                                                hidden: false,
-                                                index: i
-                                            };
-                                        });
-                                    }
-                                    return [];
-                                }
-                            } 
-                        },
-                        tooltip: {
-                            callbacks: {
-                                title: function() {
-                                    return '';
-                                },
-                                label: function(context) {
-                                    return ` ${context.label}: ${context.raw} Project`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-    </script>
-</body>
-</html>
+                '#3b82f6', '#10b981', '#f59e0b',
